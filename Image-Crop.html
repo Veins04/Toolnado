@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Professional Image Crop Tool — SkyBlue Theme</title>
+  <style>
+    :root{
+      --sky: #87CEEB;
+      --sky-dark: #66c0e8;
+      --bg: #ffffff;
+      --accent: #0b6fa4;
+      --muted: #6b7280;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    body{
+      background: linear-gradient(180deg,var(--bg) 0%, #f7fbfe 100%);
+      color:#0f172a;
+      padding:20px;
+      display:flex;align-items:flex-start;justify-content:center;
+    }
+    .wrapper{
+      width:100%;max-width:1100px;background:linear-gradient(180deg,rgba(135,206,235,0.06), rgba(135,206,235,0.02));border-radius:14px;box-shadow:0 6px 20px rgba(11,111,164,0.08);padding:18px;display:grid;grid-template-columns:1fr 380px;gap:18px;
+    }
+    header{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--sky),var(--sky-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+
+    h1{margin:0;font-size:18px}
+    p.lead{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+    /* left panel (editor) */
+    .editor{padding:12px;background:rgba(255,255,255,0.9);border-radius:10px;min-height:380px;display:flex;flex-direction:column;gap:12px}
+
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    .file-input{display:flex;align-items:center;gap:8px}
+    input[type=file]{display:none}
+    .btn{background:var(--sky);border:none;padding:9px 12px;border-radius:8px;color:#fff;font-weight:600;cursor:pointer}
+    .btn.secondary{background:#fff;border:1px solid rgba(11,111,164,0.12);color:var(--accent)}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px dashed rgba(11,111,164,0.12)}
+
+    /* image area */
+    .canvas-wrap{position:relative;flex:1;min-height:260px;border-radius:10px;overflow:hidden;border:1px dashed rgba(11,111,164,0.08);background:#f8feff}
+    .image-stage{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
+    .image-stage img{max-width:100%;max-height:100%;display:block}
+
+    /* selection box */
+    .selector{
+      position:absolute;top:20%;left:20%;width:40%;height:40%;border:2px solid rgba(11,111,164,0.95);background:rgba(11,111,164,0.07);border-radius:6px;cursor:move;touch-action:none
+    }
+    .handle{position:absolute;width:18px;height:18px;background:#fff;border:2px solid var(--accent);border-radius:4px;right:-11px;bottom:-11px;cursor:se-resize}
+    .ratio-preserve{display:inline-block;padding:6px 8px;border-radius:8px;background:#fff;border:1px solid rgba(11,111,164,0.06);font-size:13px}
+
+    /* right panel (preview) */
+    .preview-panel{padding:12px;background:#ffffff;border-radius:10px;display:flex;flex-direction:column;gap:12px;align-items:stretch}
+    .preview-box{width:100%;height:260px;border-radius:8px;border:1px solid rgba(11,111,164,0.06);display:flex;align-items:center;justify-content:center;background:#f8fbff}
+    .preview-box canvas{max-width:100%;max-height:100%}
+
+    .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .small{font-size:13px;color:var(--muted)}
+
+    footer{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+
+    /* responsive */
+    @media (max-width:900px){
+      .wrapper{grid-template-columns:1fr;}
+      .preview-panel{order:2}
+    }
+    @media (max-width:480px){
+      .selector{border-width:2px}
+      .handle{width:16px;height:16px;right:-9px;bottom:-9px}
+      .wrapper{padding:12px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper" role="main">
+    <div class="editor">
+      <header>
+        <div class="logo">IC</div>
+        <div>
+          <h1>Image Crop Tool</h1>
+          <p class="lead">Upload, select an area, preview and download a cropped image — fully responsive.</p>
+        </div>
+      </header>
+
+      <div class="controls" aria-hidden="false">
+        <label class="file-input">
+          <button class="btn" id="btnUpload">Upload Image</button>
+          <input type="file" accept="image/*" id="fileInput">
+        </label>
+
+        <button class="btn secondary" id="btnCrop" disabled>Preview Crop</button>
+        <button class="btn ghost" id="btnReset" disabled>Reset</button>
+
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <span class="ratio-preserve">Freeform crop</span>
+        </div>
+      </div>
+
+      <div class="canvas-wrap" aria-label="Image stage">
+        <div class="image-stage" id="stage">
+          <img id="sourceImage" alt="Upload an image to start" style="display:none;user-select:none;pointer-events:none;max-width:100%;height:auto;" />
+          <div class="selector" id="selector" style="display:none;" aria-hidden="true">
+            <div class="handle" id="handle"></div>
+          </div>
+        </div>
+      </div>
+
+      <small class="small">Tip: use mouse or touch to move/resize the selection. Drag the bottom-right handle to resize.</small>
+    </div>
+
+    <aside class="preview-panel">
+      <h3 style="margin:0;font-size:15px">Preview & Download</h3>
+      <div class="preview-box" id="previewBox">
+        <canvas id="previewCanvas" width="300" height="300" style="display:none"></canvas>
+        <div id="previewEmpty" style="color:var(--muted);font-size:13px">No preview yet — crop an area to see the result.</div>
+      </div>
+
+      <div class="meta">
+        <div class="small">Cropped size: <strong id="cropSize">—</strong></div>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn" id="btnDownload" disabled>Download</button>
+        </div>
+      </div>
+
+      <div style="font-size:13px;color:var(--muted)">Output format: PNG (transparent background preserved)</div>
+    </aside>
+
+    <footer>
+      <div style="font-size:13px;color:var(--muted)">Made for your multi-tool website — skyblue & white theme</div>
+      <div style="font-size:13px;color:var(--muted)">Responsive • Touch-friendly • No libraries</div>
+    </footer>
+  </div>
+
+  <script>
+    // Elements
+    const fileInput = document.getElementById('fileInput');
+    const btnUpload = document.getElementById('btnUpload');
+    const btnCrop = document.getElementById('btnCrop');
+    const btnReset = document.getElementById('btnReset');
+    const btnDownload = document.getElementById('btnDownload');
+    const sourceImage = document.getElementById('sourceImage');
+    const stage = document.getElementById('stage');
+    const selector = document.getElementById('selector');
+    const handle = document.getElementById('handle');
+    const previewCanvas = document.getElementById('previewCanvas');
+    const previewEmpty = document.getElementById('previewEmpty');
+    const previewBox = document.getElementById('previewBox');
+    const cropSize = document.getElementById('cropSize');
+
+    let imgNaturalWidth = 0, imgNaturalHeight = 0;
+    let dragging = false, resizing = false;
+    let startX=0,startY=0,selStartLeft=0,selStartTop=0,selStartWidth=0,selStartHeight=0;
+
+    // Helpers
+    function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+    // Upload handlers
+    btnUpload.addEventListener('click',()=>fileInput.click());
+    fileInput.addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ev => loadImage(ev.target.result);
+      reader.readAsDataURL(f);
+    });
+
+    function loadImage(dataUrl){
+      sourceImage.src = dataUrl;
+      sourceImage.style.display = 'block';
+      previewEmpty.style.display = 'block';
+      previewCanvas.style.display = 'none';
+      btnReset.disabled = false;
+      btnCrop.disabled = false;
+      btnDownload.disabled = true;
+
+      sourceImage.onload = ()=>{
+        imgNaturalWidth = sourceImage.naturalWidth;
+        imgNaturalHeight = sourceImage.naturalHeight;
+
+        // initialize selector to center 40% area
+        selector.style.display = 'block';
+        const rect = stage.getBoundingClientRect();
+        const w = Math.max(80, rect.width * 0.5);
+        const h = Math.max(80, rect.height * 0.5);
+        const left = (rect.width - w)/2;
+        const top = (rect.height - h)/2;
+        setSelector(left, top, w, h);
+      }
+    }
+
+    function setSelector(left, top, width, height){
+      const stageRect = stage.getBoundingClientRect();
+      // clamp to stage
+      left = clamp(left, 0, stageRect.width - 20);
+      top = clamp(top, 0, stageRect.height - 20);
+      width = clamp(width, 20, stageRect.width - left);
+      height = clamp(height, 20, stageRect.height - top);
+
+      selector.style.left = left + 'px';
+      selector.style.top = top + 'px';
+      selector.style.width = width + 'px';
+      selector.style.height = height + 'px';
+    }
+
+    // Mouse + touch events for move & resize
+    selector.addEventListener('pointerdown', startDrag);
+    handle.addEventListener('pointerdown', startResize);
+
+    function startDrag(e){
+      e.preventDefault();
+      if(e.target === handle) return;
+      dragging = true;
+      selector.setPointerCapture(e.pointerId);
+      startX = e.clientX; startY = e.clientY;
+      selStartLeft = parseFloat(selector.style.left);
+      selStartTop = parseFloat(selector.style.top);
+    }
+
+    function startResize(e){
+      e.preventDefault();
+      resizing = true;
+      handle.setPointerCapture(e.pointerId);
+      startX = e.clientX; startY = e.clientY;
+      selStartWidth = parseFloat(selector.style.width);
+      selStartHeight = parseFloat(selector.style.height);
+    }
+
+    window.addEventListener('pointermove', e => {
+      if(!sourceImage.src) return;
+      const stageRect = stage.getBoundingClientRect();
+      if(dragging){
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        const newLeft = selStartLeft + dx;
+        const newTop = selStartTop + dy;
+        setSelector(newLeft, newTop, parseFloat(selector.style.width), parseFloat(selector.style.height));
+      } else if(resizing){
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        const newW = selStartWidth + dx;
+        const newH = selStartHeight + dy;
+        setSelector(parseFloat(selector.style.left), parseFloat(selector.style.top), newW, newH);
+      }
+    });
+
+    window.addEventListener('pointerup', e => {
+      if(dragging){ dragging=false; try{ selector.releasePointerCapture(e.pointerId);}catch(e){} }
+      if(resizing){ resizing=false; try{ handle.releasePointerCapture(e.pointerId);}catch(e){} }
+    });
+
+    // Crop & preview
+    btnCrop.addEventListener('click', ()=>{
+      if(!sourceImage.src) return;
+      const stageRect = stage.getBoundingClientRect();
+      const imgRect = getImageRenderRect();
+      if(!imgRect) return alert('Image not ready');
+
+      // selector box in stage coordinates
+      const selRect = selector.getBoundingClientRect();
+
+      // compute intersection of selector with actual image area
+      const sx = (selRect.left - imgRect.left) * (imgNaturalWidth / imgRect.width);
+      const sy = (selRect.top - imgRect.top) * (imgNaturalHeight / imgRect.height);
+      const sw = selRect.width * (imgNaturalWidth / imgRect.width);
+      const sh = selRect.height * (imgNaturalHeight / imgRect.height);
+
+      // clamp
+      const sxx = clamp(sx, 0, imgNaturalWidth);
+      const syy = clamp(sy, 0, imgNaturalHeight);
+      const sww = clamp(sw, 0, imgNaturalWidth - sxx);
+      const shh = clamp(sh, 0, imgNaturalHeight - syy);
+
+      // draw onto preview canvas
+      const ctx = previewCanvas.getContext('2d');
+
+      // scale to fit preview box while preserving aspect ratio
+      const maxSide = 1000; // safety cap
+      let outW = Math.round(sww), outH = Math.round(shh);
+      const scale = Math.min(maxSide / outW, maxSide / outH, 1);
+      outW = Math.max(1, Math.round(outW * scale));
+      outH = Math.max(1, Math.round(outH * scale));
+
+      previewCanvas.width = outW;
+      previewCanvas.height = outH;
+      ctx.clearRect(0,0,outW,outH);
+      ctx.drawImage(sourceImage, sxx, syy, sww, shh, 0, 0, outW, outH);
+
+      previewCanvas.style.display = 'block';
+      previewEmpty.style.display = 'none';
+
+      cropSize.textContent = outW + ' × ' + outH + ' px';
+      btnDownload.disabled = false;
+
+      // show canvas in preview area (it will naturally fit)
+    });
+
+    // Download
+    btnDownload.addEventListener('click', ()=>{
+      if(previewCanvas.width === 0) return;
+      const dataUrl = previewCanvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = 'cropped-image.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+
+    // Reset
+    btnReset.addEventListener('click', ()=>{
+      fileInput.value = '';
+      sourceImage.src = '';
+      sourceImage.style.display = 'none';
+      selector.style.display = 'none';
+      previewCanvas.style.display = 'none';
+      previewEmpty.style.display = 'block';
+      btnDownload.disabled = true;
+      btnCrop.disabled = true;
+      btnReset.disabled = true;
+      cropSize.textContent = '—';
+    });
+
+    // Utility: figure out how the image is rendered inside the stage (center & fit)
+    function getImageRenderRect(){
+      if(!sourceImage || !sourceImage.src) return null;
+      const stageRect = stage.getBoundingClientRect();
+      // we rely on the img being displayed with max-width:100% and auto height
+      const imgDisplayedWidth = sourceImage.clientWidth;
+      const imgDisplayedHeight = sourceImage.clientHeight;
+      const imgLeft = sourceImage.offsetLeft + sourceImage.parentElement.offsetLeft;
+      // But offsetLeft relative stuff is messy; compute using boundingClientRect instead
+      const imgRect = sourceImage.getBoundingClientRect();
+      return imgRect;
+    }
+
+    // Resize observer: keep selector within bounds when stage resizes
+    new ResizeObserver(()=>{
+      if(selector.style.display === 'none') return;
+      // ensure selector stays inside
+      const sLeft = parseFloat(selector.style.left || 0);
+      const sTop = parseFloat(selector.style.top || 0);
+      const sW = parseFloat(selector.style.width || 100);
+      const sH = parseFloat(selector.style.height || 100);
+      setSelector(sLeft, sTop, sW, sH);
+    }).observe(stage);
+
+    // Accessibility: support keyboard nudges for selector
+    selector.tabIndex = 0;
+    selector.addEventListener('keydown', e=>{
+      const step = e.shiftKey?10:1;
+      let left = parseFloat(selector.style.left), top = parseFloat(selector.style.top), w = parseFloat(selector.style.width), h = parseFloat(selector.style.height);
+      if(e.key === 'ArrowLeft') left -= step;
+      if(e.key === 'ArrowRight') left += step;
+      if(e.key === 'ArrowUp') top -= step;
+      if(e.key === 'ArrowDown') top += step;
+      if(e.key === '+' || e.key === '='){ w += step; h += step; }
+      if(e.key === '-') { w = Math.max(20, w-step); h = Math.max(20, h-step); }
+      setSelector(left, top, w, h);
+    });
+
+    // Prevent scrolling while using pointer-drag on touch devices inside stage
+    stage.addEventListener('touchstart', (e)=>{ e.stopPropagation(); }, {passive:false});
+
+    // Quick demo: if user pastes an image, accept it
+    window.addEventListener('paste', e=>{
+      const items = e.clipboardData && e.clipboardData.items;
+      if(!items) return;
+      for(const it of items){
+        if(it.type.indexOf('image') === 0){
+          const file = it.getAsFile();
+          const reader = new FileReader();
+          reader.onload = ev => loadImage(ev.target.result);
+          reader.readAsDataURL(file);
+          return;
+        }
+      }
+    });
+
+    // Touch-friendly pointer behavior: ensure pointer events are allowed
+    ['pointerdown','pointermove','pointerup'].forEach(evt=>{
+      document.addEventListener(evt, ()=>{}, {passive:false});
+    });
+
+    // End of script
+  </script>
+</body>
+</html>
