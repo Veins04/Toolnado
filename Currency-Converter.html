@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+  
+  <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Currency Converter</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #e6f7ff; /* light skyblue background */
-      color: #000;
+      background: #f4faff;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -16,191 +16,103 @@
       margin: 0;
     }
 
-    .converter {
-      background: #ffffff; /* white box */
-      border-radius: 20px;
-      padding: 25px;
-      width: 95%;
-      max-width: 400px;
-      box-shadow: 0px 8px 25px rgba(0,0,0,0.2);
-      text-align: center;
-      border: 2px solid #00aaff;
-    }
-
-    .converter h2 {
-      margin-bottom: 20px;
-      color: #0077cc;
-    }
-
-    .currency-row {
-      display: flex;
-      align-items: center;
-      margin: 15px 0;
-      background: #f0f9ff;
-      border-radius: 12px;
-      padding: 10px;
-    }
-
-    .currency-row img {
-      width: 28px;
-      height: 28px;
-      margin-right: 10px;
-    }
-
-    select, input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #00aaff;
-      border-radius: 8px;
-      outline: none;
-      font-size: 16px;
-    }
-
-    input {
+    .container {
       background: #fff;
-      color: #000;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+      text-align: center;
+      width: 90%;
+      max-width: 450px;
     }
 
-    select {
-      background: #00cfff;
-      color: #000;
-      margin-left: 5px;
+    h1 {
+      color: #007bff;
+      margin-bottom: 20px;
     }
 
-    .swap-btn, .convert-btn {
-      background: #00cfff;
-      color: #000;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 50px;
-      cursor: pointer;
-      margin: 10px 5px;
-      transition: 0.3s;
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
       font-size: 16px;
-      font-weight: bold;
+      border: 1px solid #ccc;
+      border-radius: 10px;
     }
 
-    .swap-btn:hover, .convert-btn:hover {
-      background: #0099cc;
+    button {
+      background-color: #007bff;
+      color: #fff;
+      padding: 12px 20px;
+      border: none;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #0056b3;
     }
 
     .result {
-      font-size: 18px;
-      margin-top: 15px;
+      margin-top: 20px;
       font-weight: bold;
-      color: #0077cc;
-    }
-
-    @media (max-width: 500px) {
-      .currency-row {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      select, input {
-        width: 100%;
-        margin-top: 8px;
-      }
+      font-size: 18px;
     }
   </style>
 </head>
 <body>
-  <div class="converter">
-    <h2>💱 Currency Converter</h2>
 
-    <div class="currency-row">
-      <img id="fromLogo" src="https://flagsapi.com/US/flat/32.png" alt="currency logo">
-      <input type="number" id="amount" placeholder="Enter amount" min="0">
-      <select id="fromCurrency"></select>
-    </div>
+  <div class="container">
+    <h1>Currency Converter</h1>
+    <input type="number" id="amount" placeholder="Enter amount" />
+    
+    <select id="fromCurrency">
+      <option value="USD">USD - US Dollar</option>
+      <option value="INR">INR - Indian Rupee</option>
+      <option value="EUR">EUR - Euro</option>
+    </select>
 
-    <button class="swap-btn" onclick="swapCurrencies()">⇅ Swap</button>
-    <button class="convert-btn" onclick="convertCurrency()">Convert</button>
+    <select id="toCurrency">
+      <option value="INR">INR - Indian Rupee</option>
+      <option value="USD">USD - US Dollar</option>
+      <option value="EUR">EUR - Euro</option>
+    </select>
 
-    <div class="currency-row">
-      <img id="toLogo" src="https://flagsapi.com/IN/flat/32.png" alt="currency logo">
-      <select id="toCurrency"></select>
-    </div>
+    <button onclick="convertCurrency()">Convert</button>
 
-    <div class="result" id="result">Converted Amount: -</div>
+    <div class="result" id="result"></div>
   </div>
 
   <script>
-    const fromCurrency = document.getElementById("fromCurrency");
-    const toCurrency = document.getElementById("toCurrency");
-    const amount = document.getElementById("amount");
-    const result = document.getElementById("result");
-    const fromLogo = document.getElementById("fromLogo");
-    const toLogo = document.getElementById("toLogo");
-
-    const apiUrl = "https://api.exchangerate.host/convert";
-
-    const currencies = {
-      "USD": "US",
-      "EUR": "EU",
-      "INR": "IN",
-      "GBP": "GB",
-      "JPY": "JP",
-      "AUD": "AU",
-      "CAD": "CA",
-      "CNY": "CN",
-      "SGD": "SG",
-      "CHF": "CH"
+    // Fixed exchange rates
+    const exchangeRates = {
+      USD: { USD: 1, INR: 83.2, EUR: 0.92 },
+      INR: { USD: 0.012, INR: 1, EUR: 0.011 },
+      EUR: { USD: 1.09, INR: 90.5, EUR: 1 }
     };
 
-    function populateCurrencies() {
-      for (let code in currencies) {
-        let option1 = document.createElement("option");
-        option1.value = code;
-        option1.text = code;
-        fromCurrency.add(option1);
+    function convertCurrency() {
+      const amount = parseFloat(document.getElementById("amount").value);
+      const from = document.getElementById("fromCurrency").value;
+      const to = document.getElementById("toCurrency").value;
 
-        let option2 = document.createElement("option");
-        option2.value = code;
-        option2.text = code;
-        toCurrency.add(option2);
-      }
-      fromCurrency.value = "USD";
-      toCurrency.value = "INR";
-    }
-
-    async function convertCurrency() {
-      let amt = parseFloat(amount.value);
-      if (isNaN(amt) || amt <= 0) {
-        result.innerText = "Enter a valid amount!";
+      if (!amount || amount <= 0) {
+        document.getElementById("result").textContent = "Please enter a valid amount.";
         return;
       }
 
-      let from = fromCurrency.value;
-      let to = toCurrency.value;
+      const rate = exchangeRates[from][to];
+      const convertedAmount = (amount * rate).toFixed(2);
 
-      try {
-        const res = await fetch(`${apiUrl}?from=${from}&to=${to}&amount=${amt}`);
-        const data = await res.json();
-        let converted = data.result.toFixed(2);
-
-        result.innerText = `${amt} ${from} = ${converted} ${to}`;
-      } catch (error) {
-        result.innerText = "Error fetching rates!";
-      }
+      document.getElementById("result").textContent = 
+        `${amount} ${from} = ${convertedAmount} ${to}`;
     }
-
-    function updateLogos() {
-      fromLogo.src = `https://flagsapi.com/${currencies[fromCurrency.value]}/flat/32.png`;
-      toLogo.src = `https://flagsapi.com/${currencies[toCurrency.value]}/flat/32.png`;
-    }
-
-    function swapCurrencies() {
-      let temp = fromCurrency.value;
-      fromCurrency.value = toCurrency.value;
-      toCurrency.value = temp;
-      updateLogos();
-    }
-
-    fromCurrency.addEventListener("change", updateLogos);
-    toCurrency.addEventListener("change", updateLogos);
-
-    populateCurrencies();
-    updateLogos();
   </script>
+
 </body>
 </html>
+
+  
+  
