@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HEX → RGB Converter — Skyblue Theme</title>
+  <style>
+    :root{
+      --sky: #87CEEB; /* skyblue */
+      --white: #ffffff;
+      --muted: #6b7280;
+      --bg: #f6fbff;
+      --glass: rgba(255,255,255,0.7);
+      --card-shadow: 0 6px 20px rgba(34,49,63,0.08);
+      --radius: 14px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,var(--bg),var(--white));
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .container{
+      width:100%;
+      max-width:860px;
+      background:var(--white);
+      border-radius:var(--radius);
+      box-shadow:var(--card-shadow);
+      overflow:hidden;
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:0;
+    }
+
+    /* left side - controls */
+    .panel{
+      padding:28px;
+    }
+
+    h1{margin:0 0 8px;font-size:20px}
+    p.lead{margin:0 0 18px;color:var(--muted);font-size:14px}
+
+    .form-row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:14px;
+    }
+
+    .input{
+      flex:1;
+      display:flex;
+    }
+
+    input[type="text"]{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid #e6eef8;
+      background:linear-gradient(180deg,var(--white),#fbfdff);
+      font-size:15px;
+      outline:none;
+    }
+
+    input[type="text"]:focus{box-shadow:0 0 0 4px rgba(135,206,235,0.12);border-color:var(--sky)}
+
+    .buttons{display:flex;gap:10px;flex-wrap:wrap}
+    button{
+      padding:10px 14px;
+      border-radius:10px;
+      border:0;
+      font-weight:600;
+      cursor:pointer;
+      font-size:14px;
+    }
+
+    .btn-primary{background:linear-gradient(180deg,var(--sky),#54bff1);color:var(--white);box-shadow:0 6px 14px rgba(78,151,196,0.18)}
+    .btn-ghost{background:transparent;border:1px solid #e6eef8;color:var(--muted)}
+    .btn-copy{background:linear-gradient(180deg,#0ea5b7,#0891b2);color:#fff}
+
+    .output{
+      margin-top:18px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .chip{
+      padding:10px 12px;
+      border-radius:10px;
+      background:var(--bg);
+      border:1px solid #e8f6ff;
+      font-weight:600;
+      min-width:120px;
+      text-align:center;
+    }
+
+    .error{color:#b91c1c;font-weight:600;margin-top:8px}
+
+    /* right side - preview */
+    .preview{
+      background:linear-gradient(180deg, rgba(135,206,235,0.06), rgba(135,206,235,0.02));
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .swatch{
+      width:190px;height:190px;border-radius:18px;border:1px solid rgba(15,23,42,0.06);box-shadow:0 10px 30px rgba(34,49,63,0.06);
+      display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:rgba(0,0,0,0.55);
+      transition:all .18s ease;
+    }
+
+    .meta{font-size:13px;color:var(--muted);text-align:center}
+
+    /* responsiveness */
+    @media (max-width:900px){
+      .container{grid-template-columns:1fr;}
+      .preview{order:-1;padding:18px}
+      .swatch{width:120px;height:120px;border-radius:12px}
+    }
+
+    @media (max-width:420px){
+      body{padding:16px}
+      .panel{padding:18px}
+      input[type="text"]{padding:10px}
+      button{padding:10px}
+    }
+
+    footer.note{padding:12px 18px;background:linear-gradient(90deg,rgba(135,206,235,0.04),transparent);font-size:13px;color:var(--muted);border-top:1px solid rgba(0,0,0,0.02)}
+  </style>
+</head>
+<body>
+  <div class="container" role="region" aria-label="HEX to RGB converter">
+    <section class="panel">
+      <h1>HEX → RGB Converter</h1>
+      <p class="lead">Enter a HEX color code to convert it instantly to RGB. Supports 3- and 6-digit HEX with or without the leading <code>#</code>.</p>
+
+      <div class="form-row">
+        <label for="hexInput" class="sr-only">HEX code</label>
+        <div class="input">
+          <input id="hexInput" type="text" inputmode="text" autocomplete="off" placeholder="#3490dc or 3490dc or #fff" aria-label="HEX color input"/>
+        </div>
+        <button id="convertBtn" class="btn-primary" title="Convert">Convert</button>
+      </div>
+
+      <div class="buttons">
+        <button id="clearBtn" class="btn-ghost" title="Clear input and output">Clear</button>
+        <button id="copyBtn" class="btn-copy" title="Copy RGB output">Copy Output</button>
+      </div>
+
+      <div id="error" class="error" role="status" aria-live="polite" style="display:none"></div>
+
+      <div class="output" aria-hidden="false">
+        <div class="chip" id="hexOut">HEX: —</div>
+        <div class="chip" id="rgbOut">RGB: —</div>
+      </div>
+
+      <footer class="note">Tip: You can also type or paste a HEX value and press <kbd>Enter</kbd> to convert.</footer>
+    </section>
+
+    <aside class="preview" aria-label="Color preview area">
+      <div class="swatch" id="swatch">Preview</div>
+      <div class="meta">Current: <span id="metaHex">—</span> • <span id="metaRgb">—</span></div>
+    </aside>
+  </div>
+
+  <script>
+    // Helper: normalize and validate hex input. Accepts 3 or 6 char hex, with or without '#'.
+    function normalizeHex(input) {
+      if (!input) return null;
+      input = input.trim().toLowerCase();
+      if (input[0] === '#') input = input.slice(1);
+      if (!/^[0-9a-f]{3}$|^[0-9a-f]{6}$/.test(input)) return null;
+      if (input.length === 3) {
+        // expand shorthand e.g. '3aF' -> '33aaff'
+        input = input.split('').map(ch => ch + ch).join('');
+      }
+      return input;
+    }
+
+    function hexToRgb(hex) {
+      const r = parseInt(hex.slice(0,2),16);
+      const g = parseInt(hex.slice(2,4),16);
+      const b = parseInt(hex.slice(4,6),16);
+      return {r,g,b};
+    }
+
+    // UI bindings
+    const hexInput = document.getElementById('hexInput');
+    const convertBtn = document.getElementById('convertBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const hexOut = document.getElementById('hexOut');
+    const rgbOut = document.getElementById('rgbOut');
+    const swatch = document.getElementById('swatch');
+    const metaHex = document.getElementById('metaHex');
+    const metaRgb = document.getElementById('metaRgb');
+    const errorDiv = document.getElementById('error');
+
+    function showError(msg){
+      errorDiv.style.display = 'block';
+      errorDiv.textContent = msg;
+    }
+    function clearError(){ errorDiv.style.display = 'none'; errorDiv.textContent = ''; }
+
+    function updateUIFromHex(raw){
+      const norm = normalizeHex(raw);
+      if (!norm) {
+        showError('Please enter a valid 3- or 6-digit HEX code (with or without #).');
+        return false;
+      }
+      clearError();
+      const rgb = hexToRgb(norm);
+      const hexDisplay = '#' + norm.toUpperCase();
+      const rgbDisplay = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      hexOut.textContent = 'HEX: ' + hexDisplay;
+      rgbOut.textContent = 'RGB: ' + rgbDisplay;
+      metaHex.textContent = hexDisplay;
+      metaRgb.textContent = rgbDisplay;
+      swatch.style.background = hexDisplay;
+
+      // adjust text color for contrast (simple luminance check)
+      const luminance = (0.2126*rgb.r + 0.7152*rgb.g + 0.0722*rgb.b);
+      swatch.style.color = luminance > 160 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.95)';
+
+      return true;
+    }
+
+    // Convert on button click
+    convertBtn.addEventListener('click', ()=>{
+      updateUIFromHex(hexInput.value);
+    });
+
+    // Convert on Enter
+    hexInput.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter'){
+        e.preventDefault();
+        updateUIFromHex(hexInput.value);
+      }
+    });
+
+    // Instant preview while typing (live) — keep it forgiving and non-invasive
+    let liveTimer = null;
+    hexInput.addEventListener('input', ()=>{
+      clearTimeout(liveTimer);
+      const v = hexInput.value;
+      // if looks potentially valid (3 or 6 chars ignoring #) try to update instantly
+      const raw = v.replace(/[^0-9a-fA-F]/g, '');
+      if (raw.length === 3 || raw.length === 6){
+        liveTimer = setTimeout(()=>{
+          if (!updateUIFromHex(v)) {
+            // keep silent for short inputs; only show error on explicit Convert
+            clearError();
+          }
+        }, 120);
+      } else {
+        // small preview for empty
+        if (v.trim() === ''){
+          hexOut.textContent = 'HEX: —';
+          rgbOut.textContent = 'RGB: —';
+          metaHex.textContent = '—';
+          metaRgb.textContent = '—';
+          swatch.style.background = 'linear-gradient(180deg,#ffffff,#f3fbff)';
+          swatch.style.color = 'rgba(0,0,0,0.55)';
+          clearError();
+        }
+      }
+    });
+
+    // Clear
+    clearBtn.addEventListener('click', ()=>{
+      hexInput.value = '';
+      hexInput.focus();
+      hexOut.textContent = 'HEX: —';
+      rgbOut.textContent = 'RGB: —';
+      metaHex.textContent = '—';
+      metaRgb.textContent = '—';
+      swatch.style.background = 'linear-gradient(180deg,#ffffff,#f3fbff)';
+      swatch.style.color = 'rgba(0,0,0,0.55)';
+      clearError();
+    });
+
+    // Copy output (copies RGB value if present, else HEX)
+    copyBtn.addEventListener('click', async ()=>{
+      const rgbText = rgbOut.textContent.replace(/^RGB:\s*/i,'').trim();
+      const hexText = hexOut.textContent.replace(/^HEX:\s*/i,'').trim();
+      const toCopy = (rgbText && rgbText !== '—') ? rgbText : (hexText && hexText !== '—' ? hexText : '');
+      if (!toCopy){
+        showError('Nothing to copy — convert a HEX color first.');
+        return;
+      }
+      try{
+        await navigator.clipboard.writeText(toCopy);
+        // give quick visual feedback on button
+        const original = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(()=> copyBtn.textContent = original, 1200);
+      }catch(e){
+        showError('Copy failed. Your browser may block clipboard access.');
+      }
+    });
+
+    // small accessibility helper: add role to swatch
+    swatch.setAttribute('role','img');
+    swatch.setAttribute('aria-label','Color preview');
+
+    // initialize
+    (function init(){
+      swatch.style.background = 'linear-gradient(180deg,#ffffff,#f3fbff)';
+    })();
+  </script>
+</body>
+</html>
