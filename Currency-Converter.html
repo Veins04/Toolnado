@@ -7,8 +7,8 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #000;
-      color: #fff;
+      background: #e6f7ff; /* light skyblue background */
+      color: #000;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -17,25 +17,26 @@
     }
 
     .converter {
-      background: #0a4d75;
+      background: #ffffff; /* white box */
       border-radius: 20px;
       padding: 25px;
       width: 95%;
       max-width: 400px;
-      box-shadow: 0px 8px 25px rgba(0,0,0,0.5);
+      box-shadow: 0px 8px 25px rgba(0,0,0,0.2);
       text-align: center;
+      border: 2px solid #00aaff;
     }
 
     .converter h2 {
       margin-bottom: 20px;
-      color: #00cfff;
+      color: #0077cc;
     }
 
     .currency-row {
       display: flex;
       align-items: center;
       margin: 15px 0;
-      background: rgba(255,255,255,0.1);
+      background: #f0f9ff;
       border-radius: 12px;
       padding: 10px;
     }
@@ -49,7 +50,7 @@
     select, input {
       flex: 1;
       padding: 10px;
-      border: none;
+      border: 1px solid #00aaff;
       border-radius: 8px;
       outline: none;
       font-size: 16px;
@@ -66,18 +67,20 @@
       margin-left: 5px;
     }
 
-    .swap-btn {
+    .swap-btn, .convert-btn {
       background: #00cfff;
       color: #000;
       border: none;
-      padding: 8px 15px;
+      padding: 10px 20px;
       border-radius: 50px;
       cursor: pointer;
-      margin: 10px 0;
+      margin: 10px 5px;
       transition: 0.3s;
+      font-size: 16px;
+      font-weight: bold;
     }
 
-    .swap-btn:hover {
+    .swap-btn:hover, .convert-btn:hover {
       background: #0099cc;
     }
 
@@ -85,7 +88,7 @@
       font-size: 18px;
       margin-top: 15px;
       font-weight: bold;
-      color: #fff;
+      color: #0077cc;
     }
 
     @media (max-width: 500px) {
@@ -111,6 +114,7 @@
     </div>
 
     <button class="swap-btn" onclick="swapCurrencies()">⇅ Swap</button>
+    <button class="convert-btn" onclick="convertCurrency()">Convert</button>
 
     <div class="currency-row">
       <img id="toLogo" src="https://flagsapi.com/IN/flat/32.png" alt="currency logo">
@@ -128,7 +132,7 @@
     const fromLogo = document.getElementById("fromLogo");
     const toLogo = document.getElementById("toLogo");
 
-    const apiKey = "https://api.exchangerate.host/latest";
+    const apiUrl = "https://api.exchangerate.host/convert";
 
     const currencies = {
       "USD": "US",
@@ -169,12 +173,15 @@
       let from = fromCurrency.value;
       let to = toCurrency.value;
 
-      const res = await fetch(`${apiKey}?base=${from}&symbols=${to}`);
-      const data = await res.json();
-      let rate = data.rates[to];
-      let converted = (amt * rate).toFixed(2);
+      try {
+        const res = await fetch(`${apiUrl}?from=${from}&to=${to}&amount=${amt}`);
+        const data = await res.json();
+        let converted = data.result.toFixed(2);
 
-      result.innerText = `${amt} ${from} = ${converted} ${to}`;
+        result.innerText = `${amt} ${from} = ${converted} ${to}`;
+      } catch (error) {
+        result.innerText = "Error fetching rates!";
+      }
     }
 
     function updateLogos() {
@@ -187,12 +194,10 @@
       fromCurrency.value = toCurrency.value;
       toCurrency.value = temp;
       updateLogos();
-      convertCurrency();
     }
 
-    amount.addEventListener("input", convertCurrency);
-    fromCurrency.addEventListener("change", () => { updateLogos(); convertCurrency(); });
-    toCurrency.addEventListener("change", () => { updateLogos(); convertCurrency(); });
+    fromCurrency.addEventListener("change", updateLogos);
+    toCurrency.addEventListener("change", updateLogos);
 
     populateCurrencies();
     updateLogos();
