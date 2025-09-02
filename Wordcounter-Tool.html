@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Word Counter Tools</title>
+  <style>
+    :root{
+      --sky:#6ec6ff;
+      --sky-600:#42b0ff;
+      --bg:#ffffff;
+      --muted:#6b7280;
+      --card-shadow: 0 6px 18px rgba(2,6,23,0.06);
+      --radius:14px;
+      --glass: rgba(255,255,255,0.6);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg) 0%, #f5fbff 100%);color:#0f172a}
+
+    .container{
+      max-width:980px;margin:36px auto;padding:20px;
+    }
+
+    .card{
+      background:var(--bg);border-radius:var(--radius);box-shadow:var(--card-shadow);overflow:hidden;padding:18px;
+    }
+
+    header{display:flex;gap:16px;align-items:center;margin-bottom:14px}
+    .logo{width:54px;height:54px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--sky),var(--sky-600));color:white;font-weight:700;font-size:20px}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .main{
+      display:grid;grid-template-columns:1fr 320px;gap:18px;
+    }
+
+    /* left - textarea */
+    .editor{
+      display:flex;flex-direction:column;gap:10px;
+    }
+
+    textarea{
+      min-height:280px;resize:vertical;padding:14px;border-radius:10px;border:1px solid rgba(8,23,43,0.06);font-size:15px;line-height:1.6;outline:none;
+      transition:box-shadow .18s ease;border:1px solid rgba(66,176,255,0.12);
+      background:linear-gradient(180deg, rgba(240,250,255,0.9), rgba(255,255,255,0.94));
+    }
+    textarea:focus{box-shadow:0 6px 20px rgba(66,176,255,0.12)}
+
+    .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .btn{background:var(--sky);color:white;padding:10px 12px;border-radius:10px;border:none;font-weight:600;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+    .btn.ghost{background:transparent;color:var(--sky-600);border:1px solid rgba(66,176,255,0.16)}
+    .btn.secondary{background:#eef9ff;color:var(--sky-600);border:1px solid rgba(66,176,255,0.08)}
+
+    /* right - stats */
+    .stats{
+      display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(230,250,255,0.7), rgba(255,255,255,0.6));border:1px solid rgba(66,176,255,0.06)
+    }
+    .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .stat{
+      background:white;padding:12px;border-radius:10px;box-shadow:0 4px 10px rgba(2,6,23,0.03);display:flex;flex-direction:column;gap:6px;min-height:74px;justify-content:center
+    }
+    .stat strong{font-size:18px}
+    .muted{color:var(--muted);font-size:13px}
+
+    .result-box{margin-top:6px;padding:10px;border-radius:8px;background:rgba(250,250,255,0.6);border:1px dashed rgba(2,6,23,0.04);font-size:14px;color:#06202f}
+
+    footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+    .small{font-size:13px;color:var(--muted)}
+
+    /* responsiveness */
+    @media (max-width:880px){
+      .main{grid-template-columns:1fr}
+      .stats{order:2}
+      textarea{min-height:220px}
+    }
+
+    @media (max-width:420px){
+      .logo{width:44px;height:44px;font-size:18px}
+      .btn{padding:8px 10px;font-size:14px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <header>
+        <div class="logo" aria-hidden>WC</div>
+        <div>
+          <h1>Word Counter</h1>
+          <p class="lead">Instant counts for words, characters, sentences and paragraphs — skyblue &amp; white theme.</p>
+        </div>
+      </header>
+
+      <div class="main">
+        <div class="editor">
+          <label for="textInput" class="small">Paste or type your text below</label>
+          <textarea id="textInput" placeholder="Type or paste text here..." aria-label="Text input for word counter"></textarea>
+
+          <div class="controls">
+            <button class="btn" id="clearBtn" title="Clear text">Clear</button>
+            <button class="btn secondary" id="copyResultsBtn" title="Copy results summary">Copy Results</button>
+            <button class="btn ghost" id="selectAllBtn" title="Select all text">Select All</button>
+            <div style="flex:1"></div>
+            <div class="small muted">Auto updates as you type</div>
+          </div>
+        </div>
+
+        <aside class="stats" aria-live="polite">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">Statistics</div>
+            <div class="muted">Clear to reset</div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="muted">Words</div>
+              <strong id="wordCount">0</strong>
+            </div>
+
+            <div class="stat">
+              <div class="muted">Characters (with spaces)</div>
+              <strong id="charCount">0</strong>
+            </div>
+
+            <div class="stat">
+              <div class="muted">Characters (no spaces)</div>
+              <strong id="charNoSpace">0</strong>
+            </div>
+
+            <div class="stat">
+              <div class="muted">Sentences</div>
+              <strong id="sentenceCount">0</strong>
+            </div>
+          </div>
+
+          <div class="stat" style="margin-top:10px">
+            <div class="muted">Paragraphs</div>
+            <strong id="paragraphCount">0</strong>
+          </div>
+
+          <div class="result-box" id="quickResult">Words: 0 · Characters: 0 · Sentences: 0 · Paragraphs: 0</div>
+
+          <footer>
+            <div class="small muted">Tip: double-click results to copy quickly</div>
+            <div class="small">v1.0</div>
+          </footer>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Elements
+    const textarea = document.getElementById('textInput');
+    const wordCountEl = document.getElementById('wordCount');
+    const charCountEl = document.getElementById('charCount');
+    const charNoSpaceEl = document.getElementById('charNoSpace');
+    const sentenceCountEl = document.getElementById('sentenceCount');
+    const paragraphCountEl = document.getElementById('paragraphCount');
+    const quickResult = document.getElementById('quickResult');
+    const clearBtn = document.getElementById('clearBtn');
+    const copyResultsBtn = document.getElementById('copyResultsBtn');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+
+    function countWords(text){
+      // Count words using a robust token method: sequences of non-whitespace
+      if(!text) return 0;
+      // Replace non-breaking spaces and trim
+      const cleaned = text.replace(/\u00A0/g, ' ').trim();
+      if(cleaned.length === 0) return 0;
+      const matches = cleaned.match(/\b\S+\b/g);
+      return matches ? matches.length : 0;
+    }
+
+    function countSentences(text){
+      if(!text) return 0;
+      // Split on sentence end punctuation (., !, ?) followed by space or line end.
+      // Then filter out tiny fragments.
+      const parts = text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length>0);
+      return parts.length;
+    }
+
+    function countParagraphs(text){
+      if(!text) return 0;
+      // Paragraphs are blocks separated by one or more blank lines.
+      const parts = text.split(/\n{2,}/).map(p => p.replace(/\n/g,' ').trim()).filter(p => p.length>0);
+      return parts.length;
+    }
+
+    function updateCounts(){
+      const txt = textarea.value;
+      const words = countWords(txt);
+      const chars = txt.length;
+      const charsNoSpace = txt.replace(/\s/g,'').length;
+      const sentences = countSentences(txt);
+      const paragraphs = countParagraphs(txt);
+
+      wordCountEl.textContent = words.toLocaleString();
+      charCountEl.textContent = chars.toLocaleString();
+      charNoSpaceEl.textContent = charsNoSpace.toLocaleString();
+      sentenceCountEl.textContent = sentences.toLocaleString();
+      paragraphCountEl.textContent = paragraphs.toLocaleString();
+
+      quickResult.textContent = `Words: ${words} · Characters: ${chars} · Sentences: ${sentences} · Paragraphs: ${paragraphs}`;
+    }
+
+    // Event listeners
+    textarea.addEventListener('input', updateCounts);
+    textarea.addEventListener('paste', () => setTimeout(updateCounts, 10));
+
+    clearBtn.addEventListener('click', ()=>{
+      textarea.value = '';
+      updateCounts();
+      textarea.focus();
+    });
+
+    selectAllBtn.addEventListener('click', ()=>{
+      textarea.focus();
+      textarea.select();
+    });
+
+    // copy summary to clipboard
+    async function copyText(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        copyResultsBtn.textContent = 'Copied ✓';
+        setTimeout(()=> copyResultsBtn.textContent = 'Copy Results',1400);
+      }catch(e){
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); copyResultsBtn.textContent = 'Copied ✓'; setTimeout(()=> copyResultsBtn.textContent = 'Copy Results',1400);}catch(err){alert('Unable to copy automatically.');}
+        ta.remove();
+      }
+    }
+
+    copyResultsBtn.addEventListener('click', ()=>{
+      const summary = quickResult.textContent + '\n\n' + textarea.value.slice(0,2000) + (textarea.value.length>2000? '\n\n(Truncated text)' : '');
+      copyText(summary);
+    });
+
+    // double-click quickResult to copy
+    quickResult.addEventListener('dblclick', ()=>{
+      copyText(quickResult.textContent);
+    });
+
+    // keyboard shortcut: Ctrl/Cmd+K to clear
+    document.addEventListener('keydown', (e)=>{
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){
+        e.preventDefault(); textarea.value=''; updateCounts();
+      }
+    });
+
+    // initialize
+    updateCounts();
+
+  </script>
+</body>
+</html>
