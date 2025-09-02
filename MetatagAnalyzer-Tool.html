@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Meta Tag Analyzer Tools</title>
+  <style>
+    :root{
+      --sky:#7ec8f5;
+      --sky-600:#4fb3f0;
+      --bg:#ffffff;
+      --muted:#6b7280;
+      --glass: rgba(255,255,255,0.7);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,var(--bg) 0%, #f6fbff 100%);color:#0f172a}
+    .container{max-width:980px;margin:28px auto;padding:18px}
+    header{display:flex;gap:16px;align-items:center}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--sky),var(--sky-600));display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:6px 0 18px;color:var(--muted)}
+
+    .card{background:var(--glass);backdrop-filter: blur(6px);border-radius:12px;padding:14px;border:1px solid rgba(79,179,240,0.12)}
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+
+    form{display:flex;gap:8px;align-items:center}
+    input[type=url], textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6f0fa;background:white}
+    button{background:var(--sky-600);color:white;border:none;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer}
+    button.secondary{background:#eef6fb;color:#0f172a}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+
+    .results{margin-top:16px;display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:880px){.results{grid-template-columns:1fr 360px}}
+
+    .meta-list{display:flex;flex-direction:column;gap:8px}
+    .meta-item{display:flex;justify-content:space-between;gap:8px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.85);border:1px solid rgba(15,23,42,0.04)}
+    .meta-item small{color:var(--muted)}
+
+    .badge{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid rgba(0,0,0,0.06);background:white}
+    pre{white-space:pre-wrap;word-break:break-word;background:#ffffff;padding:12px;border-radius:8px;border:1px solid rgba(15,23,42,0.05);max-height:260px;overflow:auto}
+
+    .hint{font-size:13px;color:var(--muted)}
+    .ok{color:green;font-weight:600}
+    .warn{color:#b45309;font-weight:600}
+    .bad{color:#b91c1c;font-weight:700}
+
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+
+    .actions{display:flex;gap:8px;align-items:center}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">ST</div>
+        <div>
+          <h1>Meta Tag Analyzer</h1>
+          <p class="lead">Quickly inspect title, description, keywords, Open Graph & Twitter meta tags and get SEO suggestions.</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="card" aria-label="Analyzer">
+      <form id="analyzeForm" autocomplete="off">
+        <div style="display:flex;gap:10px;flex:1;align-items:center">
+          <input id="urlInput" type="url" placeholder="Enter full URL (https://example.com)" />
+          <button id="fetchBtn" type="submit">Analyze</button>
+        </div>
+      </form>
+
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button id="pasteHtmlBtn" class="secondary">Paste HTML instead</button>
+        <button id="clearBtn" class="secondary">Clear</button>
+        <div class="hint">Tip: If a site blocks CORS, paste the page HTML in the textarea to analyze.</div>
+      </div>
+
+      <div id="htmlAreaWrap" style="margin-top:12px;display:none">
+        <textarea id="htmlArea" rows="10" placeholder="Paste full page HTML here (or fetch will try CORS proxy)"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="analyzeHtmlBtn">Analyze HTML</button>
+          <button id="useProxyBtn" class="secondary">Use CORS proxy (AllOrigins)</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="results">
+      <div>
+        <section class="card" id="summaryCard">
+          <h3 style="margin-top:0">Summary</h3>
+          <div id="summaryContent" class="hint">No analysis yet. Enter a URL or paste HTML and click Analyze.</div>
+        </section>
+
+        <section class="card" id="metaCard" style="margin-top:12px;display:none">
+          <h3 style="margin-top:0">Meta Tags</h3>
+          <div class="meta-list" id="metaList"></div>
+        </section>
+
+        <section class="card" style="margin-top:12px;display:none" id="suggestCard">
+          <h3 style="margin-top:0">Optimization Suggestions</h3>
+          <ul id="suggestions"></ul>
+        </section>
+
+      </div>
+
+      <aside>
+        <section class="card" id="rawCard">
+          <h3 style="margin-top:0">Raw meta HTML</h3>
+          <pre id="rawHtml">—</pre>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="copyRaw">Copy</button>
+            <button id="downloadJson" class="secondary">Export JSON</button>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:12px">
+          <h3 style="margin-top:0">Notes</h3>
+          <p class="hint">This tool runs in your browser. Some sites disallow cross-origin requests — use the Paste HTML option if fetch fails, or enable a server-side proxy.</p>
+        </section>
+      </aside>
+    </div>
+
+    <footer>
+      <div>Built for your multi-tool site — responsive, mobile-ready, and easy to style further.</div>
+    </footer>
+  </div>
+
+  <script>
+    // Helper utilities
+    const $ = sel => document.querySelector(sel);
+    const htmlAreaWrap = $('#htmlAreaWrap');
+    const htmlArea = $('#htmlArea');
+    const summaryContent = $('#summaryContent');
+    const metaCard = $('#metaCard');
+    const metaList = $('#metaList');
+    const suggestCard = $('#suggestCard');
+    const suggestions = $('#suggestions');
+    const rawHtml = $('#rawHtml');
+
+    function safeText(s){ return (s||'').replace(/\s+/g,' ').trim(); }
+
+    function analyzeDocument(doc, sourceUrl){
+      metaCard.style.display='block';
+      suggestCard.style.display='block';
+
+      const out = {};
+      const getMeta = (name)=>{
+        const el = doc.querySelector(`meta[name="${name}"]`) || doc.querySelector(`meta[property="${name}"]`) || doc.querySelector(`meta[itemprop="${name}"]`);
+        return el ? (el.getAttribute('content')||'') : '';
+      }
+      out.title = safeText(doc.querySelector('title')?.innerText || getMeta('og:title') || getMeta('twitter:title') || '');
+      out.description = safeText(getMeta('description') || getMeta('og:description') || getMeta('twitter:description') || '');
+      out.keywords = safeText(getMeta('keywords') || '');
+      out.canonical = doc.querySelector('link[rel="canonical"]')?.getAttribute('href') || '';
+      out.charset = doc.querySelector('meta[charset]')?.getAttribute('charset') || doc.querySelector('meta[charset]')?.getAttribute('content') || '';
+      out.robots = getMeta('robots') || '';
+
+      // Open Graph / Twitter
+      out.og_title = getMeta('og:title');
+      out.og_description = getMeta('og:description');
+      out.twitter_title = getMeta('twitter:title');
+      out.twitter_description = getMeta('twitter:description');
+
+      // Build UI
+      summaryContent.innerHTML = `Analyzed: <strong>${sourceUrl||'pasted HTML'}</strong>`;
+
+      metaList.innerHTML = '';
+      const makeItem = (label, value, rule)=>{
+        const len = (value||'').length;
+        const el = document.createElement('div'); el.className='meta-item';
+        el.innerHTML = `<div>
+            <div style="font-weight:600">${label}</div>
+            <small>${value?value:'—'}</small>
+          </div>
+          <div style="text-align:right">
+            <div class="badge">${len} chars</div>
+            <div style="margin-top:6px">${rule?rule:''}</div>
+          </div>`;
+        metaList.appendChild(el);
+      }
+
+      makeItem('Title', out.title, evaluateTitle(out.title));
+      makeItem('Description', out.description, evaluateDescription(out.description));
+      makeItem('Keywords', out.keywords, evaluateKeywords(out.keywords));
+      makeItem('Canonical', out.canonical, out.canonical?'<span class="ok">Present</span>':'<span class="warn">Missing</span>');
+      makeItem('Charset', out.charset, out.charset?'<span class="ok">'+out.charset+'</span>':'<span class="warn">Missing</span>');
+      makeItem('Robots', out.robots, out.robots?out.robots:'<span class="hint">Default (index, follow)</span>');
+      makeItem('OG:Title', out.og_title, out.og_title?'<span class="ok">Present</span>':'<span class="warn">Missing</span>');
+      makeItem('OG:Description', out.og_description, out.og_description?'<span class="ok">Present</span>':'<span class="warn">Missing</span>');
+      makeItem('Twitter:Title', out.twitter_title, out.twitter_title?'<span class="ok">Present</span>':'<span class="warn">Missing</span>');
+      makeItem('Twitter:Description', out.twitter_description, out.twitter_description?'<span class="ok">Present</span>':'<span class="warn">Missing</span>');
+
+      // raw meta HTML
+      const metas = Array.from(doc.querySelectorAll('head meta, head title, head link[rel]')).map(n=>n.outerHTML).join('\n');
+      rawHtml.textContent = metas || '—';
+
+      // suggestions
+      suggestions.innerHTML = '';
+      const sug = generateSuggestions(out);
+      if(sug.length===0){
+        const li=document.createElement('li'); li.textContent='Looks good — basic meta tags present.'; suggestions.appendChild(li);
+      } else {
+        sug.forEach(s=>{ const li=document.createElement('li'); li.innerHTML=s; suggestions.appendChild(li); });
+      }
+
+      // store latest for export
+      window.latestAnalysis = {source: sourceUrl||null, meta: out, raw: metas};
+    }
+
+    function evaluateTitle(t){
+      if(!t) return '<span class="bad">Missing</span>';
+      if(t.length<30) return '<span class="warn">Too short</span>';
+      if(t.length>70) return '<span class="warn">Too long</span>';
+      return '<span class="ok">OK</span>';
+    }
+    function evaluateDescription(d){
+      if(!d) return '<span class="bad">Missing</span>';
+      if(d.length<70) return '<span class="warn">Short</span>';
+      if(d.length>160) return '<span class="warn">Too long</span>';
+      return '<span class="ok">OK</span>';
+    }
+    function evaluateKeywords(k){
+      if(!k) return '<span class="warn">Not present</span>';
+      const count = k.split(',').filter(Boolean).length;
+      if(count>10) return '<span class="warn">Too many keywords</span>';
+      return `<span class="ok">${count} keyword(s)</span>`;
+    }
+
+    function generateSuggestions(out){
+      const s=[];
+      if(!out.title) s.push('<strong>Title</strong>: Add a concise title (50–60 chars) that includes primary keyword.');
+      if(out.title && out.title.length>70) s.push('<strong>Title</strong>: Shorten title to ~50–60 chars to avoid truncation in search results.');
+      if(!out.description) s.push('<strong>Description</strong>: Add a meta description (120–155 chars) summarizing the page with target keywords.');
+      if(out.description && out.description.length>160) s.push('<strong>Description</strong>: Shorten description to under 160 chars.');
+      if(!out.canonical) s.push('<strong>Canonical</strong>: Add a canonical link to prevent duplicate content issues.');
+      if(!out.charset) s.push('<strong>Charset</strong>: Add &lt;meta charset="utf-8"&gt; in head for correct encoding.');
+      if(!out.og_title && out.title) s.push('<strong>Open Graph</strong>: Add og:title and og:description to improve link previews in social media.');
+      if(!out.twitter_title && out.title) s.push('<strong>Twitter</strong>: Add twitter:title and twitter:description for Twitter Cards.');
+      if(out.keywords && out.keywords.split(',').length>10) s.push('<strong>Keywords</strong>: Keep keyword meta tag concise or omit — search engines ignore it generally.');
+      if(out.robots && /noindex/i.test(out.robots)) s.push('<strong>Robots</strong>: Page is set to noindex — verify this is intentional.');
+      return s;
+    }
+
+    // Event handlers
+    $('#analyzeForm').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const url = $('#urlInput').value.trim();
+      if(!url){ alert('Please enter a URL or paste HTML.'); return; }
+      summaryContent.textContent = 'Fetching...';
+      try{
+        // Try direct fetch -> CORS may block. If blocked, suggest using proxy or paste HTML.
+        const res = await fetch(url);
+        if(!res.ok) throw new Error('Network error: '+res.status);
+        const text = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text,'text/html');
+        analyzeDocument(doc,url);
+      } catch(err){
+        console.warn('Direct fetch failed',err);
+        // Offer proxy fallback message
+        summaryContent.innerHTML = 'Direct fetch failed due to CORS or network error. Use <strong>Use CORS proxy</strong> button or paste HTML.';
+        htmlAreaWrap.style.display='block';
+      }
+    });
+
+    $('#pasteHtmlBtn').addEventListener('click', e=>{ htmlAreaWrap.style.display = htmlAreaWrap.style.display==='none'?'block':'none'; });
+    $('#clearBtn').addEventListener('click', ()=>{ $('#urlInput').value=''; htmlArea.value=''; summaryContent.textContent='No analysis yet. Enter a URL or paste HTML and click Analyze.'; metaCard.style.display='none'; suggestCard.style.display='none'; rawHtml.textContent='—'; metaList.innerHTML=''; suggestions.innerHTML=''; window.latestAnalysis=null; });
+
+    $('#analyzeHtmlBtn').addEventListener('click', ()=>{
+      const h = htmlArea.value.trim();
+      if(!h){ alert('Paste HTML first.'); return; }
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(h,'text/html');
+      analyzeDocument(doc,null);
+    });
+
+    $('#useProxyBtn').addEventListener('click', async ()=>{
+      const url = $('#urlInput').value.trim(); if(!url){alert('Enter a URL first.');return}
+      summaryContent.textContent='Fetching via AllOrigins proxy...';
+      try{
+        const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+        const res = await fetch(proxy);
+        if(!res.ok) throw new Error('Proxy error');
+        const text = await res.text();
+        htmlArea.value = text;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text,'text/html');
+        analyzeDocument(doc,url);
+      } catch(err){
+        summaryContent.textContent='Proxy fetch failed. Paste HTML into the textarea as a reliable fallback.';
+        console.error(err);
+      }
+    });
+
+    $('#copyRaw').addEventListener('click', ()=>{
+      navigator.clipboard.writeText(rawHtml.textContent).then(()=>{alert('Copied raw meta HTML to clipboard');});
+    });
+
+    $('#downloadJson').addEventListener('click', ()=>{
+      if(!window.latestAnalysis){ alert('No analysis to export.'); return; }
+      const blob = new Blob([JSON.stringify(window.latestAnalysis,null,2)],{type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'meta-analysis.json'; a.click();
+    });
+
+  </script>
+</body>
+</html>
