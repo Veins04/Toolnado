@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gradient Converter Tool</title>
+  <style>
+    :root{
+      --sky: #87ceeb;
+      --sky-600: #5fb3e6;
+      --white: #ffffff;
+      --muted: #6b7280;
+      --bg: #f7fbff;
+      --glass: rgba(255,255,255,0.7);
+      --card-shadow: 0 6px 18px rgba(13, 60, 96, 0.08);
+      --radius: 14px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,var(--bg), #eef8ff 60%);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:24px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      min-height:100vh;
+    }
+
+    .container{
+      width:100%;
+      max-width:1100px;
+      background: linear-gradient(180deg,var(--white), #fbfdff);
+      border-radius:var(--radius);
+      padding:20px;
+      box-shadow:var(--card-shadow);
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:18px;
+    }
+
+    header{
+      grid-column:1/-1;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+
+    .logo{
+      width:56px;height:56px;border-radius:12px;
+      background:linear-gradient(135deg,var(--sky),var(--sky-600));
+      display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;box-shadow:0 6px 18px rgba(67,150,211,0.18)
+    }
+
+    h1{font-size:18px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .controls{
+      padding:12px;display:flex;flex-direction:column;gap:12px;
+    }
+
+    .card{background:var(--glass);backdrop-filter: blur(6px);border-radius:12px;padding:12px;}
+
+    label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+    .row{display:flex;gap:10px;align-items:center}
+    .input, select, button{padding:10px;border-radius:10px;border:1px solid #e6f0fa;background:white;font-size:14px}
+    input[type="number"]{width:100%}
+
+    .stops{display:flex;flex-direction:column;gap:8px}
+
+    .stop{display:flex;gap:8px;align-items:center}
+    .stop .color-box{width:44px;height:44px;border-radius:8px;border:1px solid rgba(12,40,60,0.06);cursor:pointer}
+    .stop input[type='text']{flex:1}
+    .small{font-size:13px;padding:8px}
+
+    .preview{
+      border-radius:12px;height:300px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:12px;background:linear-gradient(90deg,#fff,#f7faff);
+    }
+
+    .preview-window{flex:1;border-radius:10px;border:1px dashed rgba(10,40,80,0.06);margin-bottom:10px;display:flex;align-items:center;justify-content:center;color:#0b1620;font-weight:600}
+
+    .code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;background:#0b1220;color:#e6f7ff;padding:12px;border-radius:8px;font-size:13px;overflow:auto}
+
+    .btns{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:none;padding:10px 12px;border-radius:10px;background:var(--sky-600);color:white;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(12,40,80,0.06);color:var(--muted)}
+
+    .footer-note{font-size:12px;color:var(--muted);margin-top:6px}
+
+    /* Responsive */
+    @media (max-width:960px){
+      .container{grid-template-columns:1fr;padding:14px}
+      .preview{height:260px}
+    }
+
+    @media (max-width:520px){
+      body{padding:12px}
+      .logo{width:48px;height:48px}
+      .preview{height:220px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="application">
+    <header>
+      <div class="logo">G</div>
+      <div>
+        <h1>Gradient Converter</h1>
+        <p class="lead">Convert HEX / RGB / HSL colors into linear or radial CSS gradients — preview, edit stops, and copy code.</p>
+      </div>
+    </header>
+
+    <div class="controls">
+      <div class="card">
+        <label for="gradient-type">Gradient type</label>
+        <div class="row">
+          <select id="gradient-type" class="input small" aria-label="Gradient type">
+            <option value="linear">Linear</option>
+            <option value="radial">Radial</option>
+          </select>
+
+          <select id="direction" class="input small" aria-label="Direction">
+            <option value="to right">To Right</option>
+            <option value="to left">To Left</option>
+            <option value="to bottom">To Bottom</option>
+            <option value="to top">To Top</option>
+            <option value="45deg">45deg</option>
+            <option value="90deg">90deg</option>
+            <option value="135deg">135deg</option>
+          </select>
+
+          <input id="angle" type="number" class="input small" placeholder="deg (optional)" min="0" max="360" title="Angle in degrees (overrides selected direction)">
+        </div>
+      </div>
+
+      <div class="card">
+        <label>Color stops</label>
+        <div class="stops" id="stops">
+          <!-- stops inserted here -->
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="add-stop" class="btn ghost">+ Add stop</button>
+          <button id="remove-stop" class="btn ghost">- Remove stop</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <label>Options</label>
+        <div class="row" style="margin-top:8px">
+          <button id="generate" class="btn">Generate CSS</button>
+          <button id="copy" class="btn">Copy CSS</button>
+          <button id="clear" class="btn ghost">Clear</button>
+          <button id="reset" class="btn ghost">Reset</button>
+        </div>
+        <p class="footer-note">Tip: Click any color box to open the color picker. You can enter colors in HEX, rgb(), or hsl().</p>
+      </div>
+    </div>
+
+    <aside class="card preview">
+      <div class="preview-window" id="preview">Preview</div>
+
+      <div>
+        <label>CSS Output</label>
+        <pre id="cssOutput" class="code">/* Your gradient CSS will appear here */</pre>
+      </div>
+    </aside>
+  </div>
+
+  <template id="stop-template">
+    <div class="stop card">
+      <div class="color-box" title="Click to pick color"></div>
+      <input type="text" class="input" placeholder="#3498db or rgb(52,152,219) or hsl(204,70%,53%)">
+      <input type="number" class="input" min="0" max="100" placeholder="pos %">
+    </div>
+  </template>
+
+  <script>
+    // Utilities: parse and normalize color strings
+    function clamp(n, a, b){return Math.max(a, Math.min(b, n));}
+
+    function normalizeColor(input){
+      if(!input) return null;
+      input = input.trim();
+      // hex
+      const hexMatch = input.match(/^#([0-9a-f]{3,8})$/i);
+      if(hexMatch){
+        let h = hexMatch[1];
+        if(h.length === 3) h = h.split('').map(s=>s+s).join('');
+        if(h.length === 6) return '#' + h.toLowerCase();
+        if(h.length === 8) return '#' + h.toLowerCase();
+      }
+      // rgb/rgba
+      const rgbMatch = input.match(/^rgba?\s*\(([^)]+)\)$/i);
+      if(rgbMatch){
+        const parts = rgbMatch[1].split(',').map(s=>s.trim());
+        if(parts.length >=3){
+          let [r,g,b] = parts;
+          // percent or number
+          const parseChannel = c => c.includes('%') ? Math.round(parseFloat(c)/100*255) : Math.round(parseFloat(c));
+          r = clamp(parseChannel(r),0,255);
+          g = clamp(parseChannel(g),0,255);
+          b = clamp(parseChannel(b),0,255);
+          return `rgb(${r}, ${g}, ${b})`;
+        }
+      }
+      // hsl/hsla
+      const hslMatch = input.match(/^hsla?\s*\(([^)]+)\)$/i);
+      if(hslMatch){
+        const parts = hslMatch[1].split(',').map(s=>s.trim());
+        if(parts.length >=3){
+          const h = (parseFloat(parts[0]) || 0) % 360;
+          const s = parseFloat(parts[1]) / 100;
+          const l = parseFloat(parts[2]) / 100;
+          // convert to rgb
+          const rgb = hslToRgb(h/360, s, l);
+          return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+        }
+      }
+      // fallback: try to use as-is (named colors)
+      return input;
+    }
+
+    function hslToRgb(h, s, l){
+      let r, g, b;
+      if(s === 0){ r = g = b = l; }
+      else {
+        const hue2rgb = (p, q, t) => {
+          if(t < 0) t += 1;
+          if(t > 1) t -= 1;
+          if(t < 1/6) return p + (q - p) * 6 * t;
+          if(t < 1/2) return q;
+          if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+          return p;
+        }
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+      }
+      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+    // DOM helpers
+    const stopsEl = document.getElementById('stops');
+    const stopTemplate = document.getElementById('stop-template');
+    const preview = document.getElementById('preview');
+    const cssOutput = document.getElementById('cssOutput');
+
+    function createStop(color = '#87ceeb', pos = ''){
+      const tpl = stopTemplate.content.cloneNode(true);
+      const wrap = tpl.querySelector('.stop');
+      const colorBox = wrap.querySelector('.color-box');
+      const colorInput = wrap.querySelector('input[type=text]');
+      const posInput = wrap.querySelector('input[type=number]');
+
+      colorBox.style.background = color;
+      colorInput.value = color;
+      posInput.value = pos;
+
+      // color picker
+      const picker = document.createElement('input');
+      picker.type = 'color';
+      picker.style.display = 'none';
+      picker.value = toHex(color) || '#87ceeb';
+      wrap.appendChild(picker);
+
+      colorBox.addEventListener('click', ()=> picker.click());
+      picker.addEventListener('input', ()=>{
+        colorBox.style.background = picker.value;
+        colorInput.value = picker.value;
+        updatePreview();
+      });
+
+      colorInput.addEventListener('change', ()=>{
+        const n = normalizeColor(colorInput.value) || colorInput.value;
+        colorBox.style.background = n;
+        picker.value = toHex(n) || picker.value;
+        updatePreview();
+      });
+
+      posInput.addEventListener('input', ()=>updatePreview());
+
+      return wrap;
+    }
+
+    function toHex(color){
+      if(!color) return null;
+      color = color.trim();
+      // if hex already
+      if(/^#([0-9a-f]{3,8})$/i.test(color)){
+        let h=color.match(/^#([0-9a-f]{3,8})$/i)[1];
+        if(h.length===3) h=h.split('').map(s=>s+s).join('');
+        if(h.length>=6) return '#'+h.slice(0,6);
+      }
+      // rgb
+      const m = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/i);
+      if(m){
+        return '#'+[1,2,3].map(i=>parseInt(m[i]).toString(16).padStart(2,'0')).join('');
+      }
+      return null; // for named colors, skip
+    }
+
+    // initialize with two stops
+    function initStops(){
+      stopsEl.innerHTML = '';
+      stopsEl.appendChild(createStop('#7dd3fc', '0'));
+      stopsEl.appendChild(createStop('#60a5fa', '100'));
+    }
+
+    initStops();
+
+    // add / remove
+    document.getElementById('add-stop').addEventListener('click', (e)=>{
+      e.preventDefault();
+      stopsEl.appendChild(createStop('#fca5a5',''));
+      updatePreview();
+    });
+    document.getElementById('remove-stop').addEventListener('click', (e)=>{
+      e.preventDefault();
+      const items = stopsEl.querySelectorAll('.stop');
+      if(items.length>2) items[items.length-1].remove();
+      updatePreview();
+    });
+
+    // generate gradient CSS
+    function buildGradient(){
+      const type = document.getElementById('gradient-type').value;
+      const angleVal = document.getElementById('angle').value.trim();
+      let direction = document.getElementById('direction').value;
+      if(angleVal !== '' && !isNaN(parseFloat(angleVal))){ direction = angleVal + 'deg'; }
+
+      const stops = Array.from(stopsEl.querySelectorAll('.stop')).map(s=>{
+        const c = s.querySelector('input[type=text]').value.trim();
+        const p = s.querySelector('input[type=number]').value.trim();
+        const n = normalizeColor(c) || c || '#000000';
+        return p === '' ? `${n}` : `${n} ${clamp(parseFloat(p)||0,0,100)}%`;
+      });
+
+      if(type === 'linear'){
+        return `background: linear-gradient(${direction}, ${stops.join(', ')});`;
+      } else {
+        return `background: radial-gradient(circle at center, ${stops.join(', ')});`;
+      }
+    }
+
+    function updatePreview(){
+      const css = buildGradient();
+      // set preview
+      const cssValue = css.replace(/^background:\s*/,'');
+      preview.style.background = cssValue;
+      cssOutput.textContent = css + "\n\n/* Example usage */\n.element {\n  " + css + "\n}";
+    }
+
+    document.getElementById('generate').addEventListener('click', ()=>{
+      updatePreview();
+      flash(cssOutput);
+    });
+
+    document.getElementById('copy').addEventListener('click', async ()=>{
+      const text = cssOutput.textContent;
+      try{
+        await navigator.clipboard.writeText(text);
+        showToast('CSS copied to clipboard');
+      }catch(e){
+        showToast('Could not copy — try selecting the code');
+      }
+    });
+
+    document.getElementById('clear').addEventListener('click', ()=>{
+      const inputs = stopsEl.querySelectorAll('input[type=text], input[type=number]');
+      inputs.forEach(i=>i.value='');
+      document.getElementById('angle').value='';
+      cssOutput.textContent='/* cleared */';
+      preview.style.background = 'linear-gradient(90deg, #fff, #f7faff)';
+    });
+
+    document.getElementById('reset').addEventListener('click', ()=>{
+      initStops();
+      document.getElementById('gradient-type').value='linear';
+      document.getElementById('direction').value='to right';
+      document.getElementById('angle').value='';
+      updatePreview();
+    });
+
+    // small UI helpers
+    function flash(el){
+      el.style.transition='box-shadow .18s ease';
+      el.style.boxShadow='0 6px 24px rgba(8,86,139,0.12)';
+      setTimeout(()=>el.style.boxShadow='none',220);
+    }
+
+    function showToast(msg){
+      const t = document.createElement('div');
+      t.textContent = msg;
+      Object.assign(t.style,{position:'fixed',right:'18px',bottom:'18px',background:'#0b1220',color:'#e6f7ff',padding:'10px 14px',borderRadius:'10px',boxShadow:'0 8px 30px rgba(2,8,23,0.25)',zIndex:9999});
+      document.body.appendChild(t);
+      setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(()=>t.remove(),500)},1600);
+    }
+
+    // initial render
+    updatePreview();
+
+    // accessibility: allow enter to regenerate when editing stops
+    stopsEl.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') { updatePreview(); } });
+  </script>
+</body>
+</html>
