@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QR Code Generator Tools</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <style>
+    :root{
+      --sky: #39b5ff;
+      --sky-2:#e6f7ff;
+      --white:#ffffff;
+      --muted:#6b7280;
+      --radius:12px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;background:linear-gradient(180deg,var(--sky-2),#ffffff 60%);color:#0f172a;display:flex;align-items:center;justify-content:center;padding:28px;
+    }
+    .card{
+      width:100%;max-width:980px;background:var(--white);border-radius:18px;box-shadow:0 10px 30px rgba(2,6,23,0.08);padding:20px;display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start;
+    }
+    header{display:flex;align-items:center;gap:12px}
+    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--sky),#7dd3fc);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+    /* left column form */
+    .controls{padding:12px}
+    label{display:block;font-size:13px;margin-bottom:6px;color:#0f172a}
+    .input, textarea, select{width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef7;background:transparent;font-size:14px}
+    textarea{min-height:110px;resize:vertical}
+    .row{display:flex;gap:10px}
+    .small{flex:1}
+    .actions{display:flex;gap:8px;margin-top:12px}
+    .btn{background:var(--sky);color:white;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent;border:1px solid rgba(2,6,23,0.06);color:#0f172a}
+    .muted{color:var(--muted);font-size:13px}
+
+    /* right column preview */
+    .preview{
+      padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(57,181,255,0.04),rgba(57,181,255,0.02));display:flex;flex-direction:column;align-items:center;gap:14px;justify-content:center;height:100%;min-height:320px
+    }
+    .qr-wrap{background:white;padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(2,6,23,0.06);display:flex;align-items:center;justify-content:center}
+    .qr-wrap img, .qr-wrap canvas{display:block;max-width:100%;height:auto}
+    .meta{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+    .chip{background:rgba(2,6,23,0.03);padding:8px 10px;border-radius:999px;font-size:13px;color:#0f172a}
+
+    footer.note{grid-column:1/-1;margin-top:6px;color:var(--muted);font-size:13px;text-align:right}
+
+    @media (max-width:880px){
+      .card{grid-template-columns:1fr;}
+      .preview{order:-1}
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="controls">
+      <header>
+        <div class="logo">QR</div>
+        <div>
+          <h1>QR Code Generator</h1>
+          <p class="lead">Instantly create, preview, and download QR codes — adjustable size &amp; error correction.</p>
+        </div>
+      </header>
+
+      <div style="margin-top:16px">
+        <label for="payload">Text or URL</label>
+        <textarea id="payload" class="input" placeholder="Enter a URL (https://example.com) or any text...">https://example.com</textarea>
+      </div>
+
+      <div style="margin-top:12px" class="row">
+        <div class="small">
+          <label for="size">Size (px)</label>
+          <input id="size" type="range" min="128" max="1024" value="256" style="width:100%" />
+          <div style="display:flex;justify-content:space-between;margin-top:6px"><span class="muted">128</span><span id="sizeVal">256</span><span class="muted">1024</span></div>
+        </div>
+        <div style="width:170px">
+          <label for="ec">Error Correction</label>
+          <select id="ec" class="input">
+            <option value="L">L — Low (7%)</option>
+            <option value="M" selected>M — Medium (15%)</option>
+            <option value="Q">Q — Quartile (25%)</option>
+            <option value="H">H — High (30%)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;align-items:center">
+        <div style="flex:1">
+          <label for="renderMode">Rendering</label>
+          <select id="renderMode" class="input">
+            <option value="canvas">Canvas (recommended)</option>
+            <option value="image">Image</option>
+            <option value="table">Table (compat)</option>
+          </select>
+        </div>
+        <div style="width:140px">
+          <label>&nbsp;</label>
+          <button id="clearBtn" class="btn ghost" style="width:100%">Clear</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="generate" class="btn">Generate</button>
+        <button id="downloadBtn" class="btn" disabled>Download (Current)</button>
+        <button id="downloadSizes" class="btn ghost" style="margin-left:auto">Download Sizes</button>
+      </div>
+
+      <p class="muted" style="margin-top:10px">Tip: Use error correction H if you plan to overlay a logo or print on imperfect surfaces.</p>
+    </div>
+
+    <div class="preview">
+      <div style="text-align:center">
+        <div class="meta">
+          <div class="chip">Preview</div>
+          <div class="chip" id="previewInfo">256 × 256 • M</div>
+        </div>
+      </div>
+      <div class="qr-wrap" id="qrcode"></div>
+
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button id="download256" class="btn ghost">Download 256</button>
+        <button id="download512" class="btn ghost">Download 512</button>
+        <button id="download1024" class="btn ghost">Download 1024</button>
+        <button id="copyBtn" class="btn">Copy QR PNG</button>
+      </div>
+
+      <div class="muted" style="font-size:12px;text-align:center;padding:0 8px">Generated client-side — no data leaves the browser.</div>
+    </div>
+
+    <footer class="note">Made for your multi-tool site • Skyblue &amp; white theme</footer>
+  </div>
+
+  <!-- QRCode.js (small and dependency-free) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    // Elements
+    const payload = document.getElementById('payload');
+    const sizeRange = document.getElementById('size');
+    const sizeVal = document.getElementById('sizeVal');
+    const ec = document.getElementById('ec');
+    const generateBtn = document.getElementById('generate');
+    const qrcodeWrap = document.getElementById('qrcode');
+    const previewInfo = document.getElementById('previewInfo');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const downloadSizes = document.getElementById('downloadSizes');
+    const clearBtn = document.getElementById('clearBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const download256 = document.getElementById('download256');
+    const download512 = document.getElementById('download512');
+    const download1024 = document.getElementById('download1024');
+    const renderMode = document.getElementById('renderMode');
+
+    let currentOptions = {text:'',size:256,ec:'M',render:'canvas'};
+    let qrInstance = null;
+
+    function clearQRCode(){
+      qrcodeWrap.innerHTML = '';
+      qrInstance = null;
+      downloadBtn.disabled = true;
+    }
+
+    function generateQRCode(){
+      const text = payload.value.trim();
+      if(!text){ clearQRCode(); return; }
+      const size = parseInt(sizeRange.value,10);
+      const ecLevel = ec.value;
+      const render = renderMode.value;
+
+      // map to library's correctLevel
+      const correctLevelMap = {L:QRCode.CorrectLevel.L, M:QRCode.CorrectLevel.M, Q:QRCode.CorrectLevel.Q, H:QRCode.CorrectLevel.H};
+
+      clearQRCode();
+
+      // create QR
+      qrInstance = new QRCode(qrcodeWrap, {
+        text: text,
+        width: size,
+        height: size,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: correctLevelMap[ecLevel]
+      });
+
+      currentOptions = {text,size,ec:ecLevel,render};
+      previewInfo.textContent = size + ' × ' + size + ' • ' + ecLevel;
+      sizeVal.textContent = size;
+      downloadBtn.disabled = false;
+    }
+
+    // Utility: convert existing QR node (img or canvas or table) to DataURL at requested px size
+    function qrNodeToDataURL(node, px){
+      // If node contains an <img>
+      const img = node.querySelector('img');
+      if(img){
+        // draw image to canvas scaled
+        const canvas = document.createElement('canvas');
+        canvas.width = px; canvas.height = px;
+        const ctx = canvas.getContext('2d');
+        // white background
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,px,px);
+        const tempImg = new Image();
+        tempImg.crossOrigin = 'anonymous';
+        return new Promise((res)=>{
+          tempImg.onload = ()=>{ ctx.drawImage(tempImg,0,0,px,px); res(canvas.toDataURL('image/png')); };
+          tempImg.onerror = ()=>{ res(null); };
+          tempImg.src = img.src;
+        });
+      }
+      // If node contains a canvas
+      const c = node.querySelector('canvas');
+      if(c){
+        // scale canvas content into a new canvas of size px
+        const source = c;
+        const temp = document.createElement('canvas'); temp.width = px; temp.height = px;
+        const ctx = temp.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,px,px);
+        ctx.drawImage(source,0,0,px,px);
+        return Promise.resolve(temp.toDataURL('image/png'));
+      }
+      // fallback: render the table into canvas (less common)
+      const table = node.querySelector('table');
+      if(table){
+        // draw table by painting squares
+        const cells = Array.from(table.querySelectorAll('td'));
+        const cols = table.rows[0].cells.length;
+        const rows = table.rows.length;
+        const cellSize = Math.floor(px / Math.max(cols, rows));
+        const temp = document.createElement('canvas'); temp.width = px; temp.height = px;
+        const ctx = temp.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,px,px);
+        cells.forEach((td,i)=>{
+          const r = Math.floor(i/cols); const cidx = i % cols;
+          const bg = window.getComputedStyle(td).backgroundColor || '#000';
+          if(bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent'){
+            ctx.fillStyle = bg; ctx.fillRect(cidx*cellSize,r*cellSize,cellSize,cellSize);
+          }
+        });
+        return Promise.resolve(temp.toDataURL('image/png'));
+      }
+      return Promise.resolve(null);
+    }
+
+    function downloadDataURL(dataURL, filename){
+      const a = document.createElement('a'); a.href = dataURL; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    // event handlers
+    generateBtn.addEventListener('click', generateQRCode);
+    payload.addEventListener('input', ()=>{ generateQRCode(); });
+    sizeRange.addEventListener('input', ()=>{ sizeVal.textContent = sizeRange.value; generateQRCode(); });
+    ec.addEventListener('change', generateQRCode);
+    renderMode.addEventListener('change', generateQRCode);
+
+    clearBtn.addEventListener('click', ()=>{ payload.value = ''; clearQRCode(); previewInfo.textContent='—'; });
+
+    downloadBtn.addEventListener('click', async ()=>{
+      if(!qrInstance) return;
+      const d = await qrNodeToDataURL(qrcodeWrap, currentOptions.size);
+      if(d) downloadDataURL(d, 'qrcode-'+currentOptions.size+'.png');
+    });
+
+    // Download multiple sizes
+    download256.addEventListener('click', async ()=>{ if(!qrInstance) return; const d=await qrNodeToDataURL(qrcodeWrap,256); if(d) downloadDataURL(d,'qrcode-256.png'); });
+    download512.addEventListener('click', async ()=>{ if(!qrInstance) return; const d=await qrNodeToDataURL(qrcodeWrap,512); if(d) downloadDataURL(d,'qrcode-512.png'); });
+    download1024.addEventListener('click', async ()=>{ if(!qrInstance) return; const d=await qrNodeToDataURL(qrcodeWrap,1024); if(d) downloadDataURL(d,'qrcode-1024.png'); });
+
+    downloadSizes.addEventListener('click', async ()=>{
+      if(!qrInstance) return;
+      const sizes = [256,512,1024];
+      for(const s of sizes){
+        // small delay to avoid blocking UI too long
+        const d = await qrNodeToDataURL(qrcodeWrap,s);
+        if(d) downloadDataURL(d,'qrcode-'+s+'.png');
+      }
+    });
+
+    copyBtn.addEventListener('click', async ()=>{
+      if(!qrInstance) return;
+      const d = await qrNodeToDataURL(qrcodeWrap, currentOptions.size);
+      if(!d) return alert('Unable to copy QR.');
+      // convert to blob and use clipboard
+      fetch(d).then(r=>r.blob()).then(async blob=>{
+        try{
+          await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+          copyBtn.textContent = 'Copied!'; setTimeout(()=>copyBtn.textContent='Copy QR PNG',1500);
+        }catch(e){ alert('Copy to clipboard not supported in this browser.'); }
+      });
+    });
+
+    // initial generate
+    generateQRCode();
+  </script>
+</body>
+</html>
