@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Unit Converter Tools</title>
+  <style>
+    :root{
+      --sky: #7ec8ff;
+      --sky-dark: #5bb0e6;
+      --bg: #ffffff;
+      --muted: #6b7280;
+      --card: #f8fbff;
+      --accent-text: #034a6b;
+      --glass: rgba(255,255,255,0.6);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg) 0%,#f0fbff 100%)}
+
+    .container{max-width:980px;margin:28px auto;padding:20px}
+
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    .logo{width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,var(--sky),var(--sky-dark));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;box-shadow:0 6px 18px rgba(30,120,200,0.15)}
+    h1{font-size:20px;margin:0;color:var(--accent-text)}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 8px 30px rgba(35,110,160,0.06)}
+
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+    label.small{font-size:13px;color:var(--muted)}
+
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+
+    select,input[type="number"],input[type="text"]{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #e6f2fb;background:transparent;font-size:14px}
+
+    .controls{display:flex;gap:10px;align-items:center}
+    .btn{background:var(--sky);border:none;color:white;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent;border:1px solid rgba(5,100,160,0.08);color:var(--accent-text)}
+
+    .toggle{display:inline-flex;align-items:center;background:white;border-radius:999px;padding:4px;border:1px solid rgba(0,0,0,0.06)}
+    .toggle button{border:0;background:transparent;padding:6px 10px;border-radius:8px;cursor:pointer}
+    .toggle button.active{background:linear-gradient(180deg,var(--sky),var(--sky-dark));color:white}
+
+    .results{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .results .panel{background:white;border-radius:10px;padding:12px;border:1px solid rgba(6,60,90,0.03)}
+    .panel h3{margin:0 0 6px 0;font-size:13px;color:var(--muted)}
+    .list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto;padding-right:6px}
+    .item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px}
+    .unit{font-weight:600;color:var(--accent-text)}
+    .value{color:var(--muted)}
+
+    .footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .small-muted{font-size:13px;color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:720px){
+      .results{grid-template-columns:1fr}
+      .row{flex-direction:column}
+      header{gap:10px}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">UC</div>
+      <div>
+        <h1>Unit Converter</h1>
+        <p class="lead">Convert between metric & imperial units in real time — length, weight, temperature, volume, area and more.</p>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="toolbar">
+        <div style="min-width:160px">
+          <label class="small">Category</label>
+          <select id="category">
+            <option value="length">Length</option>
+            <option value="weight">Weight</option>
+            <option value="temperature">Temperature</option>
+            <option value="volume">Volume</option>
+            <option value="area">Area</option>
+          </select>
+        </div>
+
+        <div style="min-width:160px">
+          <label class="small">From</label>
+          <select id="fromUnit"></select>
+        </div>
+
+        <div style="min-width:160px">
+          <label class="small">To (you'll see all)</label>
+          <select id="toUnit" disabled></select>
+        </div>
+
+        <div style="flex:0 0 160px">
+          <label class="small">Value</label>
+          <input id="value" type="number" inputmode="decimal" placeholder="Enter number" />
+        </div>
+
+        <div class="controls">
+          <div class="toggle" role="tablist" aria-label="Unit set">
+            <button id="showAll" class="active">All</button>
+            <button id="metricBtn">Metric</button>
+            <button id="imperialBtn">Imperial</button>
+          </div>
+
+          <button id="clearBtn" class="btn ghost">Clear</button>
+          <button id="copyBtn" class="btn">Copy Results</button>
+        </div>
+      </div>
+
+      <div class="results" id="resultsArea">
+        <!-- panels injected by JS -->
+      </div>
+
+      <div class="footer">
+        <div class="small-muted">Instant conversions • Mobile-ready • SkyBlue theme</div>
+        <div class="small-muted">Tip: Leave "To" set — all matching units will show.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Units definition. For each category we normalize to a base unit (SI) then convert.
+    const UNITS = {
+      length: {
+        base: 'm',
+        metric: ['km','m','cm','mm'],
+        imperial: ['mi','yd','ft','in'],
+        definitions: {
+          km: {toBase: v => v*1000, fromBase: v => v/1000, name:'Kilometre (km)'},
+          m:  {toBase: v => v,     fromBase: v => v,      name:'Metre (m)'},
+          cm: {toBase: v => v/100, fromBase: v => v*100,  name:'Centimetre (cm)'},
+          mm: {toBase: v => v/1000,fromBase: v => v*1000, name:'Millimetre (mm)'},
+          mi: {toBase: v => v*1609.344, fromBase: v => v/1609.344, name:'Mile (mi)'},
+          yd: {toBase: v => v*0.9144, fromBase: v => v/0.9144, name:'Yard (yd)'},
+          ft: {toBase: v => v*0.3048, fromBase: v => v/0.3048, name:'Foot (ft)'},
+          in: {toBase: v => v*0.0254, fromBase: v => v/0.0254, name:'Inch (in)'}
+        }
+      },
+      weight: {
+        base: 'kg',
+        metric: ['t','kg','g','mg'],
+        imperial: ['lb','oz'],
+        definitions: {
+          t:  {toBase: v=>v*1000, fromBase:v=>v/1000, name:'Tonne (t)'},
+          kg: {toBase: v=>v, fromBase:v=>v, name:'Kilogram (kg)'},
+          g:  {toBase: v=>v/1000, fromBase:v=>v*1000, name:'Gram (g)'},
+          mg: {toBase: v=>v/1e6, fromBase:v=>v*1e6, name:'Milligram (mg)'},
+          lb: {toBase: v=>v*0.45359237, fromBase:v=>v/0.45359237, name:'Pound (lb)'},
+          oz: {toBase: v=>v*0.028349523125, fromBase:v=>v/0.028349523125, name:'Ounce (oz)'}
+        }
+      },
+      temperature: {
+        base: 'c',
+        metric: ['c','k'],
+        imperial: ['f'],
+        definitions: {
+          c: {toBase:v=>v, fromBase:v=>v, name:'Celsius (°C)'},
+          f: {toBase:v=>(v-32)*(5/9), fromBase:v=>v*(9/5)+32, name:'Fahrenheit (°F)'},
+          k: {toBase:v=>v-273.15, fromBase:v=>v+273.15, name:'Kelvin (K)'}
+        }
+      },
+      volume: {
+        base: 'l',
+        metric: ['m3','l','ml'],
+        imperial: ['gal','qt','pt','cup'],
+        definitions: {
+          m3: {toBase:v=>v*1000, fromBase:v=>v/1000, name:'Cubic metre (m³)'},
+          l:  {toBase:v=>v, fromBase:v=>v, name:'Litre (L)'},
+          ml: {toBase:v=>v/1000, fromBase:v=>v*1000, name:'Millilitre (mL)'},
+          gal:{toBase:v=>v*3.785411784, fromBase:v=>v/3.785411784, name:'Gallon (US) (gal)'},
+          qt: {toBase:v=>v*0.946352946, fromBase:v=>v/0.946352946, name:'Quart (US) (qt)'},
+          pt: {toBase:v=>v*0.473176473, fromBase:v=>v/0.473176473, name:'Pint (US) (pt)'},
+          cup:{toBase:v=>v*0.2365882365, fromBase:v=>v/0.2365882365, name:'Cup (US)'}
+        }
+      },
+      area: {
+        base: 'm2',
+        metric: ['km2','m2','cm2'],
+        imperial: ['ft2','yd2','acre'],
+        definitions: {
+          km2:{toBase:v=>v*1e6, fromBase:v=>v/1e6, name:'Square kilometre (km²)'},
+          m2: {toBase:v=>v, fromBase:v=>v, name:'Square metre (m²)'},
+          cm2:{toBase:v=>v/10000, fromBase:v=>v*10000, name:'Square centimetre (cm²)'},
+          ft2:{toBase:v=>v*0.09290304, fromBase:v=>v/0.09290304, name:'Square foot (ft²)'},
+          yd2:{toBase:v=>v*0.83612736, fromBase:v=>v/0.83612736, name:'Square yard (yd²)'},
+          acre:{toBase:v=>v*4046.8564224, fromBase:v=>v/4046.8564224, name:'Acre'}
+        }
+      }
+    };
+
+    // DOM refs
+    const catEl = document.getElementById('category');
+    const fromEl = document.getElementById('fromUnit');
+    const toEl = document.getElementById('toUnit');
+    const valEl = document.getElementById('value');
+    const resultsArea = document.getElementById('resultsArea');
+    const metricBtn = document.getElementById('metricBtn');
+    const imperialBtn = document.getElementById('imperialBtn');
+    const showAllBtn = document.getElementById('showAll');
+    const clearBtn = document.getElementById('clearBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    let currentFilter = 'all'; // 'metric' | 'imperial' | 'all'
+
+    function setActiveToggle(which){
+      [showAllBtn,metricBtn,imperialBtn].forEach(b=>b.classList.remove('active'));
+      if(which==='metric') metricBtn.classList.add('active');
+      else if(which==='imperial') imperialBtn.classList.add('active');
+      else showAllBtn.classList.add('active');
+      currentFilter = which;
+      populateUnits();
+      computeAndRender();
+    }
+
+    function populateUnits(){
+      const cat = catEl.value;
+      const data = UNITS[cat];
+      fromEl.innerHTML = '';
+      toEl.innerHTML = '';
+
+      const keys = Object.keys(data.definitions);
+      const filtered = keys.filter(k => {
+        if(currentFilter==='all') return true;
+        if(currentFilter==='metric') return data.metric.includes(k);
+        return data.imperial.includes(k);
+      });
+
+      // create options
+      filtered.forEach(k=>{
+        const def = data.definitions[k];
+        const opt = document.createElement('option');
+        opt.value = k; opt.textContent = def.name;
+        fromEl.appendChild(opt);
+
+        const opt2 = opt.cloneNode(true);
+        toEl.appendChild(opt2);
+      });
+
+      // if nothing matches filter, fall back to all
+      if(!fromEl.options.length){
+        keys.forEach(k=>{
+          const def = data.definitions[k];
+          const opt = document.createElement('option'); opt.value=k; opt.textContent=def.name; fromEl.appendChild(opt);
+          const opt2 = opt.cloneNode(true); toEl.appendChild(opt2);
+        });
+      }
+    }
+
+    function convert(category, fromKey, toKey, value){
+      const def = UNITS[category];
+      if(category==='temperature'){
+        // use special formula via base c
+        const toBase = def.definitions[fromKey].toBase(value);
+        return Number(def.definitions[toKey].fromBase(toBase));
+      }
+      const toBaseVal = def.definitions[fromKey].toBase(value);
+      return Number(def.definitions[toKey].fromBase(toBaseVal));
+    }
+
+    function computeAndRender(){
+      const cat = catEl.value;
+      const data = UNITS[cat];
+      const fromKey = fromEl.value || Object.keys(data.definitions)[0];
+      const input = parseFloat(valEl.value);
+
+      // build panels: left shows input unit info, right shows converted list
+      resultsArea.innerHTML = '';
+
+      const left = document.createElement('div'); left.className='panel';
+      const right = document.createElement('div'); right.className='panel';
+
+      left.innerHTML = `<h3>Input</h3><div class="list"><div class="item"><div class="unit">${data.definitions[fromKey].name}</div><div class="value">${isNaN(input)?'—':input}</div></div></div>`;
+
+      const list = document.createElement('div'); list.className='list';
+
+      const keys = Object.keys(data.definitions);
+      const filtered = keys.filter(k => {
+        if(currentFilter==='all') return true;
+        if(currentFilter==='metric') return data.metric.includes(k);
+        return data.imperial.includes(k);
+      });
+
+      const targetKeys = filtered.length?filtered:keys;
+
+      targetKeys.forEach(k=>{
+        const row = document.createElement('div'); row.className='item';
+        const name = document.createElement('div'); name.className='unit'; name.textContent = data.definitions[k].name;
+        const val = document.createElement('div'); val.className='value';
+        if(isNaN(input)) val.textContent = '—';
+        else{
+          const out = convert(cat, fromKey, k, input);
+          val.textContent = formatNumber(out, cat);
+        }
+        row.appendChild(name); row.appendChild(val);
+        list.appendChild(row);
+      });
+
+      right.innerHTML = `<h3>Converted results</h3>`;
+      right.appendChild(list);
+
+      resultsArea.appendChild(left);
+      resultsArea.appendChild(right);
+    }
+
+    function formatNumber(n, category){
+      if(category==='temperature') return round(n,3);
+      if(Math.abs(n) >= 1000 || Math.abs(n) < 0.001 && n!==0) return n.toExponential(6);
+      return round(n,6);
+    }
+
+    function round(v, decimals){
+      const m = Math.pow(10,decimals||2);
+      return Math.round((v+Number.EPSILON)*m)/m;
+    }
+
+    // event bindings
+    catEl.addEventListener('change', ()=>{ populateUnits(); computeAndRender(); });
+    fromEl.addEventListener('change', computeAndRender);
+    toEl.addEventListener('change', computeAndRender);
+    valEl.addEventListener('input', computeAndRender);
+
+    metricBtn.addEventListener('click', ()=>setActiveToggle('metric'));
+    imperialBtn.addEventListener('click', ()=>setActiveToggle('imperial'));
+    showAllBtn.addEventListener('click', ()=>setActiveToggle('all'));
+
+    clearBtn.addEventListener('click', ()=>{ valEl.value=''; computeAndRender(); });
+
+    copyBtn.addEventListener('click', async ()=>{
+      // build a friendly text output
+      const cat = catEl.value; const data = UNITS[cat]; const fromKey = fromEl.value || Object.keys(data.definitions)[0];
+      const input = valEl.value || '—';
+      let out = `Conversion (${capitalize(cat)})\nInput: ${input} ${data.definitions[fromKey].name}\n`;
+      const keys = Object.keys(data.definitions);
+      const filtered = keys.filter(k => {
+        if(currentFilter==='all') return true;
+        if(currentFilter==='metric') return data.metric.includes(k);
+        return data.imperial.includes(k);
+      });
+      const targetKeys = filtered.length?filtered:keys;
+      targetKeys.forEach(k=>{
+        const v = isNaN(parseFloat(valEl.value))? '—' : formatNumber(convert(cat, fromKey, k, parseFloat(valEl.value)), cat);
+        out += `${data.definitions[k].name}: ${v}\n`;
+      });
+      try{
+        await navigator.clipboard.writeText(out);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(()=>copyBtn.textContent='Copy Results',1200);
+      }catch(e){
+        copyBtn.textContent = 'Copy failed';
+        setTimeout(()=>copyBtn.textContent='Copy Results',1200);
+      }
+    });
+
+    function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+
+    // init
+    populateUnits();
+    computeAndRender();
+
+  </script>
+</body>
+</html>
