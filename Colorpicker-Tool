@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Color Picker & Converter Tool</title>
+  <meta name="description" content="Pick a color, convert between HEX, RGB, and HSL, and copy values. Mobile responsive, sky-blue & white theme." />
+  <style>
+    :root{
+      --sky: #66c2ff; /* primary skyblue */
+      --sky-dark: #4aa8e6;
+      --white: #ffffff;
+      --muted: #6b7280;
+      --card-bg: rgba(255,255,255,0.9);
+      --glass: rgba(255,255,255,0.6);
+      --radius: 14px;
+      --gap: 14px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,var(--sky) 0%, #eaf7ff 55%);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:32px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+      line-height:1.35;
+    }
+
+    .container{
+      width:100%;
+      max-width:980px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95));
+      border-radius:20px;
+      padding:20px;
+      box-shadow: 0 10px 30px rgba(9,30,66,0.12);
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:20px;
+      align-items:start;
+    }
+
+    header{
+      grid-column:1/-1;
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:56px;height:56px;border-radius:12px;background:var(--sky);
+      display:flex;align-items:center;justify-content:center;color:var(--white);font-weight:700;font-size:20px;box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:14px}
+
+    /* Left column - controls */
+    .controls{
+      padding:16px;
+      background:var(--card-bg);
+      border-radius:12px;
+      backdrop-filter: blur(6px);
+    }
+
+    .picker-row{display:flex;gap:12px;align-items:center}
+    input[type="color"]{width:72px;height:56px;border-radius:10px;border:none;padding:0;cursor:pointer}
+    .range{
+      -webkit-appearance:none;height:12px;border-radius:10px;background:linear-gradient(90deg,#fff,rgba(0,0,0,0.05));outline:none;width:100%;
+    }
+
+    .fields{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+    .field{display:flex;flex-direction:column}
+    label{font-size:12px;color:var(--muted);margin-bottom:6px}
+    input[type="text"]{padding:10px;border-radius:8px;border:1px solid rgba(15,23,42,0.06);font-weight:600}
+
+    .field .row{display:flex;gap:8px}
+    .copy-btn{background:var(--sky);border:none;color:white;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:600}
+    .copy-btn:active{transform:translateY(1px)}
+
+    /* Right column - preview + info */
+    .preview-card{
+      padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.85));box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);
+      display:flex;flex-direction:column;gap:12px;align-items:stretch
+    }
+    .color-display{
+      height:180px;border-radius:10px;border:1px solid rgba(15,23,42,0.05);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700;font-size:18px
+    }
+    .meta{display:flex;gap:8px;align-items:center;justify-content:space-between}
+    .swatches{display:flex;gap:8px;flex-wrap:wrap}
+    .mini-swatch{width:36px;height:36px;border-radius:8px;border:1px solid rgba(15,23,42,0.06)}
+
+    footer.attribution{grid-column:1/-1;margin-top:6px;color:var(--muted);font-size:13px;text-align:right}
+
+    /* responsive */
+    @media (max-width:920px){
+      .container{grid-template-columns:1fr;}
+      .color-display{height:160px}
+    }
+    @media (max-width:420px){
+      body{padding:18px}
+      .container{padding:14px;border-radius:12px}
+      .logo{width:48px;height:48px}
+      input[type="color"]{width:56px;height:48px}
+      .fields{grid-template-columns:1fr}
+    }
+
+    /* tiny helper styles */
+    .muted{color:var(--muted);font-size:13px}
+    .small{font-size:13px}
+    .btn-ghost{background:transparent;border:1px solid rgba(15,23,42,0.06);padding:8px;border-radius:8px;cursor:pointer}
+    .row-between{display:flex;justify-content:space-between;align-items:center}
+  </style>
+</head>
+<body>
+  <div class="container" role="application" aria-label="Color picker and converter">
+    <header>
+      <div class="logo">CP</div>
+      <div>
+        <h1>Color Picker & Converter</h1>
+        <p class="lead">Pick visually or paste HEX/RGB/HSL. Instant conversion — copy values with one click.</p>
+      </div>
+    </header>
+
+    <section class="controls" aria-label="controls">
+      <div class="picker-row">
+        <input type="color" id="visualPicker" aria-label="color visual picker">
+        <div style="flex:1">
+          <label for="hexInput" class="small muted">HEX</label>
+          <input id="hexInput" type="text" inputmode="text" placeholder="#66c2ff" aria-label="hex input">
+        </div>
+      </div>
+
+      <div class="fields">
+        <div class="field">
+          <label for="rgbInput" class="small muted">RGB</label>
+          <div class="row">
+            <input id="rgbInput" type="text" placeholder="rgb(102,194,255)" aria-label="rgb input">
+            <button class="copy-btn" data-copy-for="rgbInput">Copy</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="hslInput" class="small muted">HSL</label>
+          <div class="row">
+            <input id="hslInput" type="text" placeholder="hsl(203,100%,69%)" aria-label="hsl input">
+            <button class="copy-btn" data-copy-for="hslInput">Copy</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="small muted">HEX Copy</label>
+          <div class="row">
+            <input id="hexCopy" type="text" readonly aria-label="hex copy">
+            <button class="copy-btn" data-copy-for="hexCopy">Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button id="btnRandom" class="btn-ghost">Random Color</button>
+        <button id="btnShade" class="btn-ghost">Generate Shades</button>
+        <div style="flex:1" class="muted small">Try typing values: <code>#ff7a59</code>, <code>rgb(255,122,89)</code>, or <code>hsl(14,91%,66%)</code></div>
+      </div>
+    </section>
+
+    <aside class="preview-card" aria-label="preview">
+      <div class="color-display" id="colorDisplay">#66C2FF</div>
+
+      <div class="meta">
+        <div>
+          <div class="muted small">Current</div>
+          <div id="currentFormats" style="font-weight:700">HEX: <span id="showHex">#66C2FF</span> • RGB: <span id="showRgb">rgb(102,194,255)</span></div>
+        </div>
+        <div class="swatches" id="swatches" aria-hidden="true">
+          <!-- generated mini swatches -->
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center">
+        <div>
+          <div class="muted small">Contrast suggestions</div>
+          <div id="contrastText" style="font-weight:700">Text color: #000000</div>
+        </div>
+        <div>
+          <button id="copyAll" class="copy-btn" data-copy-for="currentFormats">Copy All</button>
+        </div>
+      </div>
+
+      <div id="shades" class="small muted" style="margin-top:8px">Shades: —</div>
+    </aside>
+
+    <footer class="attribution">Skyblue theme • Fully responsive • Accessible</footer>
+  </div>
+
+  <script>
+    // Utility conversions
+    function clamp(v,min,max){return Math.min(max,Math.max(min,v));}
+
+    function componentToHex(c){
+      const s = c.toString(16).toUpperCase();
+      return s.length==1? '0'+s : s;
+    }
+
+    function rgbToHex(r,g,b){
+      return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
+    }
+
+    function hexToRgb(hex) {
+      if(!hex) return null;
+      hex = hex.replace('#','').trim();
+      if(hex.length===3) hex = hex.split('').map(ch=>ch+ch).join('');
+      if(hex.length!==6) return null;
+      const r = parseInt(hex.slice(0,2),16);
+      const g = parseInt(hex.slice(2,4),16);
+      const b = parseInt(hex.slice(4,6),16);
+      if(Number.isNaN(r)||Number.isNaN(g)||Number.isNaN(b)) return null;
+      return {r,g,b};
+    }
+
+    function rgbStringToObj(str){
+      // accept rgb(12,34,56) or 12,34,56
+      const m = str.match(/(-?\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/i);
+      if(!m) return null;
+      return { r: clamp(parseInt(m[1]),0,255), g: clamp(parseInt(m[2]),0,255), b: clamp(parseInt(m[3]),0,255) };
+    }
+
+    function rgbToHsl(r,g,b){
+      r/=255;g/=255;b/=255;
+      const max = Math.max(r,g,b), min = Math.min(r,g,b);
+      let h=0, s=0, l=(max+min)/2;
+      if(max!==min){
+        const d = max-min;
+        s = l>0.5? d/(2-max-min) : d/(max+min);
+        switch(max){
+          case r: h = (g-b)/d + (g<b?6:0); break;
+          case g: h = (b-r)/d + 2; break;
+          case b: h = (r-g)/d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h: Math.round(h*360), s: Math.round(s*100), l: Math.round(l*100) };
+    }
+
+    function hslToRgb(h,s,l){
+      // h:0-360, s:0-100, l:0-100
+      h = ((h % 360) + 360) % 360; s/=100; l/=100;
+      if(s===0){
+        const v = Math.round(l*255);
+        return {r:v,g:v,b:v};
+      }
+      function hue2rgb(p,q,t){
+        if(t<0) t+=1;
+        if(t>1) t-=1;
+        if(t<1/6) return p + (q-p)*6*t;
+        if(t<1/2) return q;
+        if(t<2/3) return p + (q-p)*(2/3 - t)*6;
+        return p;
+      }
+      const q = l < 0.5 ? l*(1+s) : l + s - l*s;
+      const p = 2*l - q;
+      const hk = h/360;
+      const r = Math.round(hue2rgb(p,q, hk + 1/3) * 255);
+      const g = Math.round(hue2rgb(p,q, hk) * 255);
+      const b = Math.round(hue2rgb(p,q, hk - 1/3) * 255);
+      return {r,g,b};
+    }
+
+    function hslStringToObj(str){
+      // hsl(12,34%,56%) or 12,34%,56%
+      const m = str.match(/(-?\d{1,3}(?:\.\d+)?)\s*,?\s*(\d{1,3}(?:\.\d+)?)%?\s*,?\s*(\d{1,3}(?:\.\d+)?)%?/i);
+      if(!m) return null;
+      return { h: Math.round(parseFloat(m[1])), s: clamp(Math.round(parseFloat(m[2])),0,100), l: clamp(Math.round(parseFloat(m[3])),0,100) };
+    }
+
+    // DOM elements
+    const visualPicker = document.getElementById('visualPicker');
+    const hexInput = document.getElementById('hexInput');
+    const rgbInput = document.getElementById('rgbInput');
+    const hslInput = document.getElementById('hslInput');
+    const hexCopy = document.getElementById('hexCopy');
+    const colorDisplay = document.getElementById('colorDisplay');
+    const showHex = document.getElementById('showHex');
+    const showRgb = document.getElementById('showRgb');
+    const contrastText = document.getElementById('contrastText');
+    const swatchesWrap = document.getElementById('swatches');
+    const shadesArea = document.getElementById('shades');
+
+    // initialize with default color
+    let current = { r:102, g:194, b:255 };
+    function updateAllFromRGB(obj){
+      current = { r: clamp(obj.r,0,255), g: clamp(obj.g,0,255), b: clamp(obj.b,0,255) };
+      const hex = rgbToHex(current.r,current.g,current.b);
+      const hsl = rgbToHsl(current.r,current.g,current.b);
+      // set UI values
+      visualPicker.value = hex;
+      hexInput.value = hex.toUpperCase();
+      rgbInput.value = `rgb(${current.r}, ${current.g}, ${current.b})`;
+      hslInput.value = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+      hexCopy.value = hex.toUpperCase();
+      showHex.textContent = hex.toUpperCase();
+      showRgb.textContent = `rgb(${current.r}, ${current.g}, ${current.b})`;
+      colorDisplay.style.background = hex;
+      colorDisplay.style.color = getBestTextColor(current) === 'black' ? '#000000' : '#FFFFFF';
+      contrastText.textContent = `Text color: ${getBestTextColor(current)==='black'?'#000000':'#FFFFFF'}`;
+      generateMiniSwatches(current);
+      generateShades(current);
+    }
+
+    function getBestTextColor({r,g,b}){
+      // WCAG-ish luminance
+      const RsRGB = r/255; const GsRGB = g/255; const BsRGB = b/255;
+      const R = RsRGB <= 0.03928 ? RsRGB/12.92 : Math.pow((RsRGB+0.055)/1.055,2.4);
+      const G = GsRGB <= 0.03928 ? GsRGB/12.92 : Math.pow((GsRGB+0.055)/1.055,2.4);
+      const B = BsRGB <= 0.03928 ? BsRGB/12.92 : Math.pow((BsRGB+0.055)/1.055,2.4);
+      const L = 0.2126*R + 0.7152*G + 0.0722*B;
+      return L > 0.179 ? 'black' : 'white';
+    }
+
+    function generateMiniSwatches({r,g,b}){
+      // create three nearby swatches for visual variety
+      swatchesWrap.innerHTML = '';
+      const baseHSL = rgbToHsl(r,g,b);
+      const variants = [ -20, 0, 20 ];
+      variants.forEach(delta=>{
+        const h = (baseHSL.h + delta + 360) % 360;
+        const rgb = hslToRgb(h, baseHSL.s, baseHSL.l);
+        const el = document.createElement('div');
+        el.className = 'mini-swatch';
+        el.title = rgbToHex(rgb.r,rgb.g,rgb.b);
+        el.style.background = rgbToHex(rgb.r,rgb.g,rgb.b);
+        el.addEventListener('click', ()=> updateAllFromRGB(rgb));
+        swatchesWrap.appendChild(el);
+      });
+    }
+
+    function generateShades({r,g,b}){
+      const baseHSL = rgbToHsl(r,g,b);
+      const shades = [];
+      for(let i=5;i<=95;i+=15){
+        const rgb = hslToRgb(baseHSL.h, baseHSL.s, i);
+        shades.push({l:i,hex:rgbToHex(rgb.r,rgb.g,rgb.b)});
+      }
+      shadesArea.innerHTML = shades.map(s=>`${s.l}% → ${s.hex}`).join(' • ');
+    }
+
+    // parse arbitrary input
+    function parseAndUpdateInput(str){
+      if(!str) return;
+      str = str.trim();
+      // hex
+      if(/^#?[0-9a-f]{3}([0-9a-f]{3})?$/i.test(str)){
+        const rgb = hexToRgb(str);
+        if(rgb) updateAllFromRGB(rgb);
+        return;
+      }
+      // rgb
+      if(/rgb/i.test(str) || /^\d+\s*,\s*\d+/i.test(str)){
+        const rgb = rgbStringToObj(str);
+        if(rgb) updateAllFromRGB(rgb);
+        return;
+      }
+      // hsl
+      if(/hsl/i.test(str) || /%/.test(str)){
+        const hsl = hslStringToObj(str);
+        if(hsl){
+          const rgb = hslToRgb(hsl.h,hsl.s,hsl.l);
+          updateAllFromRGB(rgb);
+          return;
+        }
+      }
+      // invalid - do nothing
+    }
+
+    // event listeners
+    visualPicker.addEventListener('input', e=>{
+      parseAndUpdateInput(e.target.value);
+    });
+
+    hexInput.addEventListener('change', e=>{
+      parseAndUpdateInput(e.target.value);
+    });
+    hexInput.addEventListener('keyup', e=>{
+      if(e.key === 'Enter') parseAndUpdateInput(e.target.value);
+    });
+
+    rgbInput.addEventListener('change', e=> parseAndUpdateInput(e.target.value));
+    rgbInput.addEventListener('keyup', e=>{ if(e.key==='Enter') parseAndUpdateInput(e.target.value); });
+
+    hslInput.addEventListener('change', e=> parseAndUpdateInput(e.target.value));
+    hslInput.addEventListener('keyup', e=>{ if(e.key==='Enter') parseAndUpdateInput(e.target.value); });
+
+    // copy buttons
+    document.querySelectorAll('.copy-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const forId = btn.getAttribute('data-copy-for');
+        let text = '';
+        if(forId === 'currentFormats'){
+          text = `${showHex.textContent} | ${showRgb.textContent} | ${hslInput.value}`;
+        } else {
+          const el = document.getElementById(forId);
+          text = el ? el.value || el.textContent : '';
+        }
+        try{
+          await navigator.clipboard.writeText(text);
+          btn.textContent = 'Copied!';
+          setTimeout(()=> btn.textContent = 'Copy',1200);
+        }catch(err){
+          // fallback
+          const ta = document.createElement('textarea');
+          ta.value = text; document.body.appendChild(ta); ta.select();
+          try{ document.execCommand('copy'); btn.textContent='Copied!'; setTimeout(()=> btn.textContent='Copy',1200);}catch(e){ alert('Copy failed — please select and copy manually.'); }
+          ta.remove();
+        }
+      });
+    });
+
+    // random color
+    document.getElementById('btnRandom').addEventListener('click', ()=>{
+      const r = Math.floor(Math.random()*256);
+      const g = Math.floor(Math.random()*256);
+      const b = Math.floor(Math.random()*256);
+      updateAllFromRGB({r,g,b});
+    });
+
+    document.getElementById('btnShade').addEventListener('click', ()=>{
+      // toggle generation of shades visible in swatches area
+      const base = {...current};
+      generateShades(base);
+      // also populate swatches area with 6 shades
+      swatchesWrap.innerHTML = '';
+      const baseHSL = rgbToHsl(base.r,base.g,base.b);
+      for(let l=10;l<=90;l+=16){
+        const rgb = hslToRgb(baseHSL.h, baseHSL.s, l);
+        const el = document.createElement('div');
+        el.className = 'mini-swatch';
+        el.style.background = rgbToHex(rgb.r,rgb.g,rgb.b);
+        el.title = `${l}%`;
+        el.addEventListener('click', ()=> updateAllFromRGB(rgb));
+        swatchesWrap.appendChild(el);
+      }
+    });
+
+    // seed
+    updateAllFromRGB(current);
+
+    // Accessibility: allow keyboard paste into page to parse colors
+    window.addEventListener('paste', e=>{
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      if(text) parseAndUpdateInput(text);
+    });
+
+    // small helper: allow clicking color display to copy hex
+    colorDisplay.addEventListener('click', async ()=>{
+      const hex = showHex.textContent;
+      try{ await navigator.clipboard.writeText(hex); colorDisplay.textContent = 'Copied '+hex; setTimeout(()=> colorDisplay.textContent = hex,900); }catch(e){}
+    });
+
+  </script>
+</body>
+</html>
