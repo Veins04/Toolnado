@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Word Counter Tool</title>
+  <style>
+    :root{
+      --sky: #7ec8ff; /* skyblue */
+      --deep-sky: #53b1ff;
+      --bg: #f7fbff;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --radius: 14px;
+      --glass: rgba(255,255,255,0.6);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: linear-gradient(180deg, var(--bg), #eef8ff 60%);
+      color:#0f172a;
+      padding:28px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .container{
+      width:100%;
+      max-width:980px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.95));
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(16,24,40,0.08);
+      padding:20px;
+      display:grid;
+      grid-template-columns: 1fr 320px;
+      gap:18px;
+    }
+
+    header{
+      grid-column: 1 / -1;
+      display:flex;
+      gap:16px;
+      align-items:center;
+    }
+    .logo{
+      width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--sky),var(--deep-sky));
+      color:white;font-weight:700;font-size:20px;box-shadow:0 6px 18px rgba(82,145,255,0.18)
+    }
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    /* Editor area */
+    .editor{
+      display:flex;flex-direction:column;gap:12px;
+    }
+    textarea{
+      width:100%;min-height:320px;resize:vertical;padding:16px;border-radius:12px;border:1px solid rgba(15,23,42,0.06);
+      font-size:15px;line-height:1.6;background:transparent;outline:none;color:var(--deep-sky);
+      box-shadow: inset 0 1px 0 rgba(16,24,40,0.02);
+    }
+
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;border:none;cursor:pointer;font-weight:600;
+      background:var(--card);box-shadow:0 6px 14px rgba(15,23,42,0.06);
+    }
+    .btn.primary{background:linear-gradient(90deg,var(--sky),var(--deep-sky));color:white}
+    .btn.ghost{background:transparent;border:1px solid rgba(15,23,42,0.06)}
+
+    .stats{
+      background:var(--card);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;height:100%;
+    }
+    .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .stat{background:linear-gradient(180deg, rgba(124,196,255,0.06), rgba(255,255,255,0.02));padding:12px;border-radius:10px;}
+    .stat .label{font-size:12px;color:var(--muted)}
+    .stat .value{font-size:20px;font-weight:700;color:#0f172a}
+
+    .meta{display:flex;gap:8px;align-items:center;justify-content:space-between}
+    .small{font-size:12px;color:var(--muted)}
+
+    /* Responsive */
+    @media (max-width:880px){
+      .container{grid-template-columns:1fr; padding:14px}
+      .stats{order:2}
+    }
+
+    @media (max-width:420px){
+      textarea{min-height:220px;padding:12px}
+      .logo{width:48px;height:48px}
+    }
+
+    footer{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding-top:6px}
+
+    .hint{font-size:13px;color:var(--muted)}
+
+    /* subtle focus */
+    textarea:focus{box-shadow:0 6px 24px rgba(83,148,255,0.12), inset 0 0 0 3px rgba(126,200,255,0.08)}
+    .btn:active{transform:translateY(1px)}
+  </style>
+</head>
+<body>
+  <main class="container" role="main">
+    <header>
+      <div class="logo">WC</div>
+      <div>
+        <h1>Word Counter</h1>
+        <p class="lead">Paste or type any text — stats update in real time. Skyblue &amp; white theme.</p>
+      </div>
+    </header>
+
+    <section class="editor" aria-labelledby="editorHeading">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 id="editorHeading" style="font-size:15px;margin:0">Text input</h2>
+        <div class="toolbar">
+          <button class="btn ghost" id="pasteBtn" title="Paste from clipboard">Paste</button>
+          <button class="btn ghost" id="copyBtn" title="Copy text">Copy</button>
+          <button class="btn" id="clearBtn" title="Clear text">Clear</button>
+          <button class="btn primary" id="resetBtn" title="Reset stats & text">Reset</button>
+        </div>
+      </div>
+
+      <textarea id="textInput" placeholder="Type or paste your text here..." aria-label="Text input"></textarea>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <div class="small hint">Tip: Double newlines create paragraphs. Sentences are detected by ., ?, or !</div>
+        <div style="margin-left:auto" class="small hint">Real-time updates • Responsive</div>
+      </div>
+    </section>
+
+    <aside class="stats" aria-labelledby="statsHeading">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h3 id="statsHeading" style="margin:0">Statistics</h3>
+          <div class="small">Instant counts for words, characters, sentences, and paragraphs.</div>
+        </div>
+        <div class="small">Preview</div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="label">Words</div>
+          <div class="value" id="wordCount">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Characters (with spaces)</div>
+          <div class="value" id="charWithSpaces">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Characters (without spaces)</div>
+          <div class="value" id="charNoSpaces">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Sentences</div>
+          <div class="value" id="sentenceCount">0</div>
+        </div>
+      </div>
+
+      <div style="margin-top:8px;">
+        <div class="label small">Paragraphs</div>
+        <div class="value" id="paragraphCount">0</div>
+      </div>
+
+      <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center">
+        <div class="small">Estimated reading time</div>
+        <div id="readTime" class="value">0 min</div>
+      </div>
+    </aside>
+
+    <footer>
+      <div class="hint">Built for your multi-tool website — matches the skyblue &amp; white aesthetic.</div>
+      <div class="hint">Need additional counts (e.g., unique words)? Ask me to add them.</div>
+    </footer>
+  </main>
+
+  <script>
+    const textInput = document.getElementById('textInput');
+    const wordCountEl = document.getElementById('wordCount');
+    const charWithSpacesEl = document.getElementById('charWithSpaces');
+    const charNoSpacesEl = document.getElementById('charNoSpaces');
+    const sentenceCountEl = document.getElementById('sentenceCount');
+    const paragraphCountEl = document.getElementById('paragraphCount');
+    const readTimeEl = document.getElementById('readTime');
+
+    const clearBtn = document.getElementById('clearBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    function computeStats(text){
+      // Normalize line endings
+      const normalized = text.replace(/\r\n/g,'\n').trim();
+
+      // Characters
+      const charsWithSpaces = normalized.length;
+      const charsNoSpaces = normalized.replace(/\s+/g,'').length;
+
+      // Words: match sequences of letters/numbers/apostrophes/hyphens (basic but robust)
+      // Use Unicode-aware match if supported. Fall back to a simpler expression if not.
+      let words = [];
+      try{
+        words = normalized.match(/\b[\p{L}\p{N}'-]+\b/gu) || [];
+      }catch(e){
+        words = normalized.match(/\b[\w'-]+\b/g) || [];
+      }
+
+      // Sentences: split on sentence end punctuation, keep non-empty
+      const sentences = normalized.split(/[.!?]+\s*/).filter(s => s.trim().length>0);
+
+      // Paragraphs: split on two or more newlines, count non-empty
+      const paragraphs = normalized.split(/\n{2,}/).filter(p => p.replace(/\s+/g,'').length>0);
+
+      // Reading time (assuming 200 words per minute)
+      const wordsCount = words.length;
+      const minutes = Math.ceil(wordsCount / 200);
+
+      return {
+        words: wordsCount,
+        charsWithSpaces: charsWithSpaces || 0,
+        charsNoSpaces: charsNoSpaces || 0,
+        sentences: sentences.length,
+        paragraphs: paragraphs.length,
+        readMins: minutes
+      };
+    }
+
+    function updateUI(){
+      const text = textInput.value;
+      const stats = computeStats(text);
+      wordCountEl.textContent = stats.words;
+      charWithSpacesEl.textContent = stats.charsWithSpaces;
+      charNoSpacesEl.textContent = stats.charsNoSpaces;
+      sentenceCountEl.textContent = stats.sentences;
+      paragraphCountEl.textContent = stats.paragraphs;
+      readTimeEl.textContent = stats.readMins + ' min';
+    }
+
+    // Real-time updates
+    textInput.addEventListener('input', updateUI);
+
+    // Buttons
+    clearBtn.addEventListener('click', ()=>{
+      textInput.value = '';
+      updateUI();
+      textInput.focus();
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      textInput.value = '';
+      updateUI();
+      alert('Text and stats reset.');
+      textInput.focus();
+    });
+
+    pasteBtn.addEventListener('click', async ()=>{
+      try{
+        const clipboardText = await navigator.clipboard.readText();
+        textInput.focus();
+        // insert at cursor
+        const start = textInput.selectionStart;
+        const end = textInput.selectionEnd;
+        const before = textInput.value.slice(0,start);
+        const after = textInput.value.slice(end);
+        textInput.value = before + clipboardText + after;
+        // place cursor after pasted content
+        const cursor = start + clipboardText.length;
+        textInput.setSelectionRange(cursor,cursor);
+        updateUI();
+      }catch(err){
+        console.warn('Clipboard paste failed',err);
+        alert('Unable to access clipboard. Try using Ctrl+V / Cmd+V instead.');
+      }
+    });
+
+    copyBtn.addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(textInput.value);
+        copyBtn.textContent = 'Copied';
+        setTimeout(()=>copyBtn.textContent = 'Copy', 1200);
+      }catch(e){
+        alert('Copy failed — please select the text and copy manually.');
+      }
+    });
+
+    // initialize
+    updateUI();
+
+    // Accessibility: keyboard shortcut Ctrl/Cmd+K to clear
+    window.addEventListener('keydown', (e)=>{
+      if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){
+        e.preventDefault();
+        clearBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
