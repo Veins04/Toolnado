@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Text Encryptor / Decryptor</title>
+  <style>
+    :root{
+      --sky-100: #e6f7ff;
+      --sky-200: #bfeaff;
+      --sky-400: #66ccff;
+      --white: #ffffff;
+      --muted: #6b7280;
+      --glass: rgba(255,255,255,0.6);
+      --card-shadow: 0 6px 20px rgba(8, 30, 63, 0.12);
+      --accent: #0ea5e9;
+      --radius: 12px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *{box-sizing: border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--sky-100),var(--white));color:#0b2540}
+
+    .container{
+      max-width:980px;margin:40px auto;padding:20px;display:grid;grid-template-columns:1fr;gap:18px
+    }
+
+    .header{
+      display:flex;align-items:center;gap:16px;padding:18px;background:linear-gradient(180deg,var(--white),var(--glass));border-radius:var(--radius);box-shadow:var(--card-shadow);
+    }
+    .logo{
+      width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--sky-400),var(--accent));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px
+    }
+    .title{font-size:18px;font-weight:700}
+    .subtitle{color:var(--muted);font-size:13px}
+
+    .card{background:var(--white);border-radius:var(--radius);padding:18px;box-shadow:var(--card-shadow)}
+
+    form.controls{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+    @media (max-width:880px){form.controls{grid-template-columns:1fr;}}
+
+    label.field{display:block;margin-bottom:8px;font-size:13px;color:var(--muted)}
+    textarea,input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef6;background:transparent;outline:none;font-size:14px}
+    textarea{min-height:160px;resize:vertical}
+
+    .side{
+      display:flex;flex-direction:column;gap:12px
+    }
+
+    .row{display:flex;gap:8px}
+    button.btn{padding:11px 14px;border-radius:10px;border:none;background:var(--accent);color:white;font-weight:600;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid #d4e9fb;color:#0b2540}
+    .danger{background:#ef4444}
+
+    .helper{font-size:13px;color:var(--muted)}
+
+    .output{background:#f8fbff;border-radius:10px;border:1px solid #e3f2ff;padding:12px;min-height:140px;white-space:pre-wrap;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace}
+
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+
+    .small{font-size:12px;color:var(--muted)}
+
+    /* subtle focus styles */
+    input:focus,select:focus,textarea:focus{box-shadow:0 0 0 4px rgba(14,165,233,0.08)}
+
+    /* accessibility */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <div class="logo">T</div>
+      <div>
+        <div class="title">Text Encryptor / Decryptor</div>
+        <div class="subtitle">Professional, lightweight, and mobile-first — choose Caesar, Base64 or XOR key methods.</div>
+      </div>
+    </header>
+
+    <section class="card">
+      <form class="controls" id="toolForm" onsubmit="return false;">
+        <div>
+          <label class="field">Input text</label>
+          <textarea id="inputText" placeholder="Paste or type text here"></textarea>
+
+          <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;align-items:center">
+            <div style="flex:1;min-width:220px">
+              <label class="field">Encryption method</label>
+              <select id="method">
+                <option value="caesar">Caesar Cipher (shift)</option>
+                <option value="base64">Base64</option>
+                <option value="xor">XOR with key (text)</option>
+              </select>
+            </div>
+
+            <div style="width:140px;min-width:120px">
+              <label class="field">Shift / Key</label>
+              <input id="methodKey" type="text" placeholder="e.g. 3 or secretKey">
+            </div>
+
+            <div style="min-width:120px;display:flex;flex-direction:column;justify-content:flex-end">
+              <label class="field">Output format</label>
+              <select id="outputFormat">
+                <option value="text">Text</option>
+                <option value="hex">Hex (for XOR)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:14px">
+            <button class="btn" id="encryptBtn">Encrypt</button>
+            <button class="btn" id="decryptBtn" style="background:#0b6b8a">Decrypt</button>
+            <button class="ghost" id="clearBtn" type="button">Clear</button>
+          </div>
+
+          <div class="helper" style="margin-top:10px">Tip: For Caesar, use a numeric shift (e.g. 3). For XOR, enter a text key; results may be binary — choose Hex output for safe transport.</div>
+        </div>
+
+        <aside class="side">
+          <div>
+            <label class="field">Output</label>
+            <div id="output" class="output" aria-live="polite"></div>
+          </div>
+
+          <div class="row">
+            <button class="btn" id="copyBtn" type="button">Copy Output</button>
+            <button class="ghost" id="downloadBtn" type="button">Download</button>
+          </div>
+
+          <div class="small">Secure-looking UI — suitable for embedding on a tools page. This is a client-side tool; do not use it for sensitive secrets in production.</div>
+        </aside>
+      </form>
+
+      <div class="footer">
+        <div class="small">Made for your multi-tool site • SkyBlue theme</div>
+        <div class="small">Last updated: Sept 2, 2025</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Utility helpers
+    const $ = id => document.getElementById(id);
+
+    function caesarEncrypt(str, shift){
+      shift = Number(shift) || 0;
+      return [...str].map(ch => {
+        const code = ch.charCodeAt(0);
+        // A-Z
+        if(code >= 65 && code <= 90) return String.fromCharCode((code - 65 + shift + 26) % 26 + 65);
+        // a-z
+        if(code >= 97 && code <= 122) return String.fromCharCode((code - 97 + shift + 26) % 26 + 97);
+        return ch;
+      }).join('');
+    }
+    function caesarDecrypt(str, shift){ return caesarEncrypt(str, -(Number(shift)||0)); }
+
+    function base64Encode(str){ try{return btoa(unescape(encodeURIComponent(str)));}catch(e){return 'Error: cannot Base64-encode input.'} }
+    function base64Decode(str){ try{return decodeURIComponent(escape(atob(str)));}catch(e){return 'Error: invalid Base64 string.'} }
+
+    function xorWithKey(str, key){
+      if(!key) return null;
+      const out = [];
+      for(let i=0;i<str.length;i++){
+        out.push(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+      }
+      return out; // array of numbers
+    }
+
+    function bytesToHex(bytes){ return bytes.map(b=>b.toString(16).padStart(2,'0')).join(''); }
+    function hexToBytes(hex){
+      if(hex.length % 2 !== 0) return null;
+      const res = [];
+      for(let i=0;i<hex.length;i+=2){ res.push(parseInt(hex.slice(i,i+2),16)); }
+      return res;
+    }
+
+    function bytesToStr(bytes, key){
+      return bytes.map((b,i)=>String.fromCharCode(b ^ key.charCodeAt(i % key.length))).join('');
+    }
+
+    // DOM elements
+    const inputText = $('inputText');
+    const method = $('method');
+    const methodKey = $('methodKey');
+    const outputDiv = $('output');
+    const outputFormat = $('outputFormat');
+
+    // buttons
+    $('encryptBtn').addEventListener('click', ()=>{
+      const txt = inputText.value || '';
+      const m = method.value;
+      const key = methodKey.value;
+      if(!txt){ outputDiv.textContent = ''; return; }
+
+      if(m === 'caesar'){
+        if(isNaN(Number(key))){ outputDiv.textContent = 'Error: Caesar shift must be a number (e.g. 3).'; return; }
+        outputDiv.textContent = caesarEncrypt(txt, Number(key));
+      } else if(m === 'base64'){
+        outputDiv.textContent = base64Encode(txt);
+      } else if(m === 'xor'){
+        if(!key){ outputDiv.textContent = 'Error: XOR requires a non-empty key.'; return; }
+        const bytes = xorWithKey(txt, key);
+        if(outputFormat.value === 'hex') outputDiv.textContent = bytesToHex(bytes);
+        else outputDiv.textContent = String.fromCharCode(...bytes);
+      }
+    });
+
+    $('decryptBtn').addEventListener('click', ()=>{
+      const txt = inputText.value || '';
+      const m = method.value;
+      const key = methodKey.value;
+      if(!txt){ outputDiv.textContent = ''; return; }
+
+      if(m === 'caesar'){
+        if(isNaN(Number(key))){ outputDiv.textContent = 'Error: Caesar shift must be a number (e.g. 3).'; return; }
+        outputDiv.textContent = caesarDecrypt(txt, Number(key));
+      } else if(m === 'base64'){
+        outputDiv.textContent = base64Decode(txt);
+      } else if(m === 'xor'){
+        if(!key){ outputDiv.textContent = 'Error: XOR requires a non-empty key.'; return; }
+        if(outputFormat.value === 'hex'){
+          const bytes = hexToBytes(txt.trim());
+          if(!bytes) { outputDiv.textContent = 'Error: invalid hex string.'; return; }
+          outputDiv.textContent = bytesToStr(bytes, key);
+        } else {
+          // assume raw bytes in string
+          const bytes = [...txt].map(c=>c.charCodeAt(0));
+          outputDiv.textContent = bytesToStr(bytes, key);
+        }
+      }
+    });
+
+    $('clearBtn').addEventListener('click', ()=>{ inputText.value=''; outputDiv.textContent=''; methodKey.value=''; });
+
+    $('copyBtn').addEventListener('click', async ()=>{
+      const text = outputDiv.textContent || '';
+      if(!text) return;
+      try{
+        await navigator.clipboard.writeText(text);
+        const old = $('copyBtn').textContent;
+        $('copyBtn').textContent = 'Copied ✓';
+        setTimeout(()=> $('copyBtn').textContent = old, 1400);
+      }catch(e){ alert('Copy failed: your browser may not allow clipboard access.'); }
+    });
+
+    $('downloadBtn').addEventListener('click', ()=>{
+      const data = outputDiv.textContent || '';
+      if(!data) return; const blob = new Blob([data],{type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='output.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    // small UX: auto select output format for XOR
+    method.addEventListener('change', ()=>{
+      if(method.value === 'xor') outputFormat.value = 'hex';
+      else outputFormat.value = 'text';
+    });
+
+    // Prevent accidental paste of huge binary data into text areas
+    inputText.addEventListener('paste', (e)=>{
+      const txt = (e.clipboardData||window.clipboardData).getData('text') || '';
+      if(txt.length > 200000){ e.preventDefault(); alert('Pasted content is too large.'); }
+    });
+
+  </script>
+</body>
+</html>
