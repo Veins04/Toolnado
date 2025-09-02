@@ -8,8 +8,8 @@
     /* General styles */
     body {
       font-family: Arial, sans-serif;
-      background-color: #000; /* Black background */
-      color: #fff;
+      background-color: #ffffff; /* White background */
+      color: #000; /* Black text */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -19,17 +19,17 @@
     }
 
     .bmi-container {
-      background: #0a3d62; /* Darker sky blue shade */
+      background: #e6f7ff; /* Very light sky blue */
       border-radius: 15px;
       padding: 30px 25px;
       width: 100%;
       max-width: 400px;
-      box-shadow: 0px 4px 12px rgba(0,0,0,0.6);
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
     }
 
     .bmi-container h2 {
       text-align: center;
-      color: #00aaff; /* Sky blue accent */
+      color: #008ecc; /* Sky blue accent */
       margin-bottom: 20px;
     }
 
@@ -37,19 +37,21 @@
       display: block;
       margin: 10px 0 5px;
       font-size: 14px;
+      color: #333;
     }
 
     input, select {
       width: 100%;
       padding: 10px;
       border-radius: 8px;
-      border: none;
+      border: 1px solid #ccc;
       font-size: 14px;
       margin-bottom: 15px;
     }
 
     input:focus, select:focus {
       outline: 2px solid #00aaff;
+      border-color: #00aaff;
     }
 
     button {
@@ -73,14 +75,16 @@
       margin-top: 20px;
       padding: 15px;
       border-radius: 10px;
-      background: #022c43;
+      background: #cceeff; /* Light blue box */
       text-align: center;
       font-size: 16px;
+      color: #000;
     }
 
     .category {
       font-weight: bold;
       margin-top: 10px;
+      color: #004466;
     }
 
     /* Responsive */
