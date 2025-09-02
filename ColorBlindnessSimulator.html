@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Blindness Simulator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8fbff;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: skyblue;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    input[type="file"], button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: skyblue;
+      color: white;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+
+    input[type="file"]:hover, button:hover {
+      background: #1c97d0;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      width: 100%;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      padding: 10px;
+      text-align: center;
+    }
+
+    .card canvas, 
+    .card img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+
+    .card h3 {
+      margin: 10px 0 5px;
+      font-size: 1.1rem;
+      color: #333;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        font-size: 1.2rem;
+      }
+      input[type="file"], button {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>🎨 Color Blindness Simulator</header>
+  <div class="container">
+    <div class="controls">
+      <input type="file" id="upload" accept="image/*">
+      <button onclick="resetSimulator()">Reset</button>
+    </div>
+    <div class="gallery" id="gallery">
+      <!-- Dynamic Cards -->
+    </div>
+  </div>
+
+  <script>
+    const gallery = document.getElementById("gallery");
+    const upload = document.getElementById("upload");
+
+    const filters = {
+      "Original": null,
+      "Deuteranopia": [
+        [0.625, 0.7, -0.025],
+        [0.7, 0.3, 0],
+        [0, 0.3, 0.7]
+      ],
+      "Protanopia": [
+        [0.567, 0.433, 0],
+        [0.558, 0.442, 0],
+        [0, 0.242, 0.758]
+      ],
+      "Tritanopia": [
+        [0.95, 0.05, 0],
+        [0, 0.433, 0.567],
+        [0, 0.475, 0.525]
+      ]
+    };
+
+    upload.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = function() {
+          gallery.innerHTML = "";
+          Object.entries(filters).forEach(([name, matrix]) => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            const title = document.createElement("h3");
+            title.textContent = name;
+
+            if (matrix === null) {
+              const originalImg = document.createElement("img");
+              originalImg.src = img.src;
+              card.appendChild(title);
+              card.appendChild(originalImg);
+            } else {
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.drawImage(img, 0, 0);
+              let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              let data = imageData.data;
+
+              for (let i = 0; i < data.length; i += 4) {
+                let r = data[i], g = data[i + 1], b = data[i + 2];
+                data[i]     = r * matrix[0][0] + g * matrix[0][1] + b * matrix[0][2];
+                data[i + 1] = r * matrix[1][0] + g * matrix[1][1] + b * matrix[1][2];
+                data[i + 2] = r * matrix[2][0] + g * matrix[2][1] + b * matrix[2][2];
+              }
+              ctx.putImageData(imageData, 0, 0);
+              card.appendChild(title);
+              card.appendChild(canvas);
+            }
+            gallery.appendChild(card);
+          });
+        };
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function resetSimulator() {
+      upload.value = "";
+      gallery.innerHTML = "";
+    }
+  </script>
+</body>
+</html>
