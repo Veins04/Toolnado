@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Barcode Generator Tools</title>
+  <style>
+    :root{
+      --sky:#6ec6ff;
+      --sky-deep:#3fb0ff;
+      --bg:#ffffff;
+      --muted:#6b7280;
+      --card:#f8fbff;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,var(--bg) 0%, #f4fbff 100%);color:#0f172a;}
+    .container{max-width:980px;margin:36px auto;padding:20px}
+
+    .card{background:var(--card);border-radius:14px;box-shadow:0 6px 24px rgba(15,23,42,0.06);padding:20px}
+    header{display:flex;gap:16px;align-items:center}
+    .logo{width:56px;height:56px;background:linear-gradient(135deg,var(--sky),var(--sky-deep));border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:6px 0 0;color:var(--muted);font-size:14px}
+
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:18px;margin-top:18px}
+
+    form.controls{display:grid;gap:12px}
+    .row{display:flex;gap:12px;align-items:center}
+    label{font-size:13px;color:var(--muted);min-width:82px}
+    input[type="text"], select, input[type="number"]{flex:1;padding:10px 12px;border-radius:8px;border:1px solid #e6eef9;background:white}
+    input[type="color"]{border:none;padding:0;background:transparent;height:38px;width:56px}
+    .small{font-size:13px;color:var(--muted)}
+
+    .preview{display:flex;flex-direction:column;align-items:center;gap:12px;padding:14px}
+    .preview-area{background:linear-gradient(180deg,#ffffff, #f7fbff);padding:18px;border-radius:10px;border:1px dashed rgba(63,176,255,0.15);width:100%;display:flex;flex-direction:column;align-items:center}
+    svg{max-width:100%;height:auto}
+
+    .controls-footer{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:8px}
+    button{cursor:pointer;border:0;padding:10px 14px;border-radius:10px;background:var(--sky-deep);color:white;font-weight:600}
+    .btn-ghost{background:transparent;border:1px solid rgba(15,23,42,0.06);color:var(--sky-deep);font-weight:600}
+
+    .muted{color:var(--muted);font-size:13px}
+
+    /* responsive */
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr;}
+      .preview{order:-1}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <header>
+        <div class="logo">BG</div>
+        <div>
+          <h1>Barcode Generator Tools</h1>
+          <p class="lead">Generate Code128, EAN-13, UPC and download as SVG or PNG. Fully responsive and customizable.</p>
+        </div>
+      </header>
+
+      <div class="grid">
+        <div>
+          <form id="barcodeForm" class="controls" onsubmit="return false;">
+            <div>
+              <div class="row">
+                <label for="data">Text / Numbers</label>
+                <input id="data" type="text" placeholder="Enter text or digits (e.g. 123456789012)" value="012345678901" />
+              </div>
+              <div class="row">
+                <label for="type">Barcode Type</label>
+                <select id="type">
+                  <option value="code128">Code 128</option>
+                  <option value="ean13">EAN-13</option>
+                  <option value="upc">UPC-A</option>
+                </select>
+              </div>
+              <div class="row">
+                <label for="scale">Size (scale)</label>
+                <input id="scale" type="number" min="1" max="6" step="1" value="2" />
+              </div>
+              <div class="row">
+                <label for="height">Height</label>
+                <input id="height" type="number" min="20" max="200" step="1" value="60" />
+              </div>
+              <div class="row">
+                <label for="color">Bar color</label>
+                <input id="color" type="color" value="#000000" />
+              </div>
+              <div class="row">
+                <label for="bg">Background</label>
+                <input id="bg" type="color" value="#ffffff" />
+              </div>
+              <div class="row">
+                <label for="format">Output</label>
+                <select id="format">
+                  <option value="svg">SVG</option>
+                  <option value="png">PNG</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="controls-footer">
+              <div class="muted">Tip: EAN-13 requires 12 digits (the 13th is checksum). UPC-A requires 11 digits (12th is checksum).</div>
+              <div style="display:flex;gap:8px">
+                <button id="generate">Generate</button>
+                <button id="download" class="btn-ghost">Download</button>
+              </div>
+            </div>
+          </form>
+
+          <div style="margin-top:12px;color:var(--muted);font-size:13px">Designed for a skyblue & white multi-tool site — easy to integrate.</div>
+        </div>
+
+        <aside class="preview card" aria-label="Barcode preview">
+          <div class="preview-area">
+            <div id="svgHolder" style="width:100%;display:flex;justify-content:center;align-items:center;padding:6px"></div>
+            <canvas id="pngCanvas" style="display:none"></canvas>
+          </div>
+          <div style="width:100%;display:flex;justify-content:center;gap:8px">
+            <button id="copySvg" class="btn-ghost">Copy SVG</button>
+            <button id="downloadSvg" class="btn-ghost">Download SVG</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- JsBarcode CDN (supports Code128, EAN13, UPC) -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script>
+    // Elements
+    const dataInput = document.getElementById('data');
+    const typeSelect = document.getElementById('type');
+    const scaleInput = document.getElementById('scale');
+    const heightInput = document.getElementById('height');
+    const colorInput = document.getElementById('color');
+    const bgInput = document.getElementById('bg');
+    const formatSelect = document.getElementById('format');
+    const generateBtn = document.getElementById('generate');
+    const downloadBtn = document.getElementById('download');
+    const svgHolder = document.getElementById('svgHolder');
+    const pngCanvas = document.getElementById('pngCanvas');
+    const copySvgBtn = document.getElementById('copySvg');
+    const downloadSvgBtn = document.getElementById('downloadSvg');
+
+    function validateForType(value, type){
+      const digits = value.replace(/\D/g,'');
+      if(type === 'ean13'){
+        // expect 12 or 13 digits (we allow 12 and let library checksum handle)
+        return digits.length === 12 || digits.length === 13;
+      }
+      if(type === 'upc'){
+        // UPC-A expects 11 or 12
+        return digits.length === 11 || digits.length === 12;
+      }
+      // code128 accepts anything
+      return value.length > 0;
+    }
+
+    function showError(msg){
+      alert(msg);
+    }
+
+    function generate(){
+      const text = dataInput.value.trim();
+      const type = typeSelect.value;
+      const scale = Number(scaleInput.value) || 2;
+      const height = Number(heightInput.value) || 60;
+      const lineColor = colorInput.value;
+      const background = bgInput.value;
+
+      if(!validateForType(text, type)){
+        showError('Input length/format does not match selected barcode type. Please check the tip under the controls.');
+        return;
+      }
+
+      // Clear previous
+      svgHolder.innerHTML = '';
+
+      // create svg element
+      const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      svg.setAttribute('id','barcodeSvg');
+      svgHolder.appendChild(svg);
+
+      // JsBarcode options
+      const options = {
+        format: type === 'upc' ? 'UPC' : (type === 'ean13' ? 'EAN13' : 'CODE128'),
+        lineColor: lineColor,
+        background: background,
+        width: scale,
+        height: height,
+        displayValue: true,
+        textMargin: 2,
+        fontSize: 14
+      };
+
+      try{
+        JsBarcode(svg, text, options);
+      }catch(e){
+        showError('Failed to generate barcode: ' + (e.message || e));
+        console.error(e);
+        svgHolder.innerHTML = '';
+        return;
+      }
+
+      // prepare PNG canvas for downloads when requested
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+      const url = URL.createObjectURL(svgBlob);
+
+      const img = new Image();
+      img.onload = function(){
+        // set canvas size based on scale multiplier
+        pngCanvas.width = img.width;
+        pngCanvas.height = img.height;
+        const ctx = pngCanvas.getContext('2d');
+        // fill background
+        ctx.fillStyle = background;
+        ctx.fillRect(0,0,pngCanvas.width,pngCanvas.height);
+        ctx.drawImage(img,0,0);
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = function(e){console.warn('image load error', e); URL.revokeObjectURL(url);};
+      img.src = url;
+
+      // show/hide buttons depending on format
+      if(formatSelect.value === 'svg'){
+        downloadBtn.textContent = 'Download SVG';
+      } else {
+        downloadBtn.textContent = 'Download PNG';
+      }
+    }
+
+    generateBtn.addEventListener('click', generate);
+
+    // auto-generate on enter in data input
+    dataInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); generate(); } });
+
+    downloadBtn.addEventListener('click', ()=>{
+      const format = formatSelect.value;
+      const svg = document.getElementById('barcodeSvg');
+      if(!svg){ showError('Please generate a barcode first.'); return; }
+
+      if(format === 'svg'){
+        // download svg
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const blob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `barcode_${typeSelect.value || 'barcode'}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } else {
+        // download PNG from canvas
+        if(pngCanvas.width === 0 || pngCanvas.height === 0){ showError('PNG not ready yet. Generate again.'); return; }
+        // let user pick scale via prompt? We'll offer multiple sizes by resizing canvas temporarily
+        const sizePrompt = prompt('Enter output width in pixels (e.g. 600). Leave blank for current size.', '');
+        let width = parseInt(sizePrompt);
+        const tmpCanvas = document.createElement('canvas');
+        const ctx = tmpCanvas.getContext('2d');
+        if(isFinite(width) && width > 0){
+          const ratio = pngCanvas.height / pngCanvas.width;
+          tmpCanvas.width = width;
+          tmpCanvas.height = Math.round(width * ratio);
+          ctx.drawImage(pngCanvas, 0, 0, tmpCanvas.width, tmpCanvas.height);
+        } else {
+          tmpCanvas.width = pngCanvas.width;
+          tmpCanvas.height = pngCanvas.height;
+          ctx.drawImage(pngCanvas, 0, 0);
+        }
+        tmpCanvas.toBlob(function(blob){
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `barcode_${typeSelect.value || 'barcode'}.png`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      }
+    });
+
+    downloadSvgBtn.addEventListener('click', ()=>{
+      const svg = document.getElementById('barcodeSvg');
+      if(!svg){ showError('Please generate a barcode first.'); return; }
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const blob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `barcode_${typeSelect.value || 'barcode'}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    copySvgBtn.addEventListener('click', async ()=>{
+      const svg = document.getElementById('barcodeSvg');
+      if(!svg){ showError('Please generate a barcode first.'); return; }
+      const svgText = new XMLSerializer().serializeToString(svg);
+      try{
+        await navigator.clipboard.writeText(svgText);
+        alert('SVG copied to clipboard');
+      }catch(e){
+        showError('Copy failed: ' + e);
+      }
+    });
+
+    // generate default on load
+    window.addEventListener('load', generate);
+  </script>
+</body>
+</html>
