@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Age Calculator</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #000000, #0f3057);
+      color: #f0f8ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .calculator-container {
+      background: #111827;
+      border-radius: 20px;
+      box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .calculator-container h2 {
+      margin-bottom: 20px;
+      color: #87ceeb;
+      font-size: 1.8rem;
+    }
+
+    .input-section {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 1rem;
+    }
+
+    input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid #87ceeb;
+      background-color: #1f2937;
+      color: #ffffff;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    input[type="date"]:focus {
+      border-color: #00bfff;
+      box-shadow: 0px 0px 10px rgba(135, 206, 235, 0.7);
+    }
+
+    .result {
+      background-color: #1f2937;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 15px;
+      border: 2px solid #87ceeb;
+    }
+
+    .result p {
+      margin: 10px 0;
+      font-size: 1.1rem;
+    }
+
+    @media (max-width: 600px) {
+      .calculator-container {
+        padding: 20px;
+      }
+      .calculator-container h2 {
+        font-size: 1.5rem;
+      }
+      .result p {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calculator-container">
+    <h2>Age Calculator</h2>
+    <div class="input-section">
+      <label for="birthdate">Select Your Birthdate:</label>
+      <input type="date" id="birthdate" />
+    </div>
+    <div class="result" id="result">
+      <p>Years: <span id="years">-</span></p>
+      <p>Months: <span id="months">-</span></p>
+      <p>Days: <span id="days">-</span></p>
+    </div>
+  </div>
+
+  <script>
+    const birthdateInput = document.getElementById("birthdate");
+    const yearsSpan = document.getElementById("years");
+    const monthsSpan = document.getElementById("months");
+    const daysSpan = document.getElementById("days");
+
+    birthdateInput.addEventListener("input", calculateAge);
+
+    function calculateAge() {
+      const birthDate = new Date(birthdateInput.value);
+      if (!birthdateInput.value) return;
+
+      const today = new Date();
+
+      let years = today.getFullYear() - birthDate.getFullYear();
+      let months = today.getMonth() - birthDate.getMonth();
+      let days = today.getDate() - birthDate.getDate();
+
+      if (days < 0) {
+        months--;
+        const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+        days += prevMonth;
+      }
+
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+
+      yearsSpan.textContent = years;
+      monthsSpan.textContent = months;
+      daysSpan.textContent = days;
+    }
+  </script>
+
+</body>
+</html>
