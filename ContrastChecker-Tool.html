@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contrast Checker Tool</title>
+  <style>
+    :root{
+      --sky: #66c2ff;
+      --sky-600: #38a9ff;
+      --bg: #ffffff;
+      --muted: #6b7280;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --card-shadow: 0 6px 20px rgba(6, 30, 70, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      padding:24px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:1000px;
+      background:var(--bg);
+      border-radius:14px;
+      box-shadow:var(--card-shadow);
+      padding:20px;
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:20px;
+    }
+
+    header{
+      grid-column:1/-1;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    h1{margin:0;font-size:20px;color:var(--sky-600)}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .controls{padding:12px;display:grid;gap:12px}
+
+    .field{display:flex;gap:8px;align-items:center}
+    .field label{min-width:70px;font-size:13px;color:var(--muted)}
+    .input,
+    .select{
+      flex:1;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    input[type="text"], select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid #e6eefb;
+      background:#f7fbff;
+      font-size:14px;
+      outline:none;
+    }
+
+    .row{display:flex;gap:8px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:0;cursor:pointer;background:var(--sky);color:white;font-weight:600}
+    .btn.ghost{background:transparent;border:1px solid #e6eefb;color:var(--sky-600);font-weight:600}
+    .btn.danger{background:var(--danger)}
+
+    .preview{
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid #e8f3ff;
+      box-shadow:0 6px 18px rgba(14,56,90,0.04);
+    }
+
+    .swatches{display:flex;height:120px}
+    .swatch{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;color:var(--bg);font-weight:700}
+    .swatch small{font-weight:600;opacity:0.95}
+
+    .results{padding:12px;display:flex;flex-direction:column;gap:10px}
+    .result-row{display:flex;justify-content:space-between;align-items:center}
+
+    .chip{padding:6px 10px;border-radius:999px;font-weight:700}
+    .chip.pass{background:rgba(22,163,74,0.12);color:var(--success)}
+    .chip.fail{background:rgba(220,38,38,0.08);color:var(--danger)}
+
+    .small{font-size:13px;color:var(--muted)}
+
+    /* Right column */
+    .info-card{background:linear-gradient(180deg, #ffffff, #fbfdff);border-radius:12px;padding:14px;border:1px solid #eef9ff}
+
+    .stat{display:flex;align-items:center;gap:12px}
+    .ratio{font-size:28px;font-weight:800}
+    .rules{display:grid;gap:8px;margin-top:8px}
+
+    footer{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+
+    /* responsive */
+    @media (max-width:880px){
+      .wrap{grid-template-columns:1fr;}
+      .swatches{height:100px}
+    }
+
+    @media (max-width:420px){
+      body{padding:12px}
+      input[type="text"], select{padding:9px}
+      .ratio{font-size:22px}
+    }
+
+    .helper{font-size:12px;color:var(--muted)}
+    .controls .helpers{display:flex;gap:8px;flex-wrap:wrap}
+
+    .copy-btn{background:#eef9ff;border:1px solid #d4f0ff;color:var(--sky-600);padding:8px 10px;border-radius:8px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="wrap" role="application" aria-labelledby="title">
+    <header>
+      <div>
+        <h1 id="title">Contrast Checker</h1>
+        <p class="lead">Quickly check WCAG contrast ratios for foreground/background colors — Skyblue theme.</p>
+      </div>
+      <div class="controls" style="width:260px;">
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+          <button id="resetBtn" class="btn ghost">Reset</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="controls" aria-label="Color inputs">
+      <div class="field">
+        <label for="colorA">Color A</label>
+        <div class="input">
+          <input id="colorA" type="text" placeholder="#4A90E2 or rgb(74,144,226) or hsl(207,69%,59%)" aria-label="Color A input" />
+          <input id="pickerA" type="color" value="#4A90E2" title="Pick color A" aria-label="Color A picker" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="colorB">Color B</label>
+        <div class="input">
+          <input id="colorB" type="text" placeholder="#ffffff or rgb(255,255,255)" aria-label="Color B input" />
+          <input id="pickerB" type="color" value="#ffffff" title="Pick color B" aria-label="Color B picker" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="mode">Mode</label>
+        <div class="input">
+          <select id="mode" aria-label="Preview mode">
+            <option value="normal">Normal text on background</option>
+            <option value="reverse">Background on text</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <button id="checkBtn" class="btn">Check Contrast</button>
+        <button id="clearBtn" class="btn ghost">Clear</button>
+      </div>
+
+      <div class="helpers small">Use hex, rgb(), or hsl(). Try the color pickers for fast input.</div>
+    </section>
+
+    <aside style="padding:12px;">
+      <div class="info-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <div>
+            <div class="small">Contrast ratio</div>
+            <div class="ratio" id="ratio">—</div>
+          </div>
+          <div style="text-align:right">
+            <div class="small">Result</div>
+            <div id="passFail"><span class="chip fail">—</span></div>
+          </div>
+        </div>
+
+        <div class="rules">
+          <div class="small">WCAG Guidelines:</div>
+          <div class="small">Normal text: <strong>≥ 4.5:1</strong></div>
+          <div class="small">Large text (≥18pt or 14pt bold): <strong>≥ 3:1</strong></div>
+          <div class="small">AAA: <strong>≥ 7:1</strong></div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:12px;align-items:center;">
+          <button id="copyRatio" class="copy-btn">Copy ratio</button>
+          <button id="copyCss" class="btn ghost">Copy CSS</button>
+        </div>
+
+      </div>
+
+      <div style="margin-top:14px;" class="info-card">
+        <div class="small">Accessibility hints</div>
+        <ul style="margin:8px 0 0 16px;color:var(--muted);font-size:13px;">
+          <li>Increase contrast by darkening the foreground or lightening the background (or vice-versa).</li>
+          <li>Consider bold or larger text for readability when contrast is borderline.</li>
+          <li>Use tools during design & testing for consistent accessibility.</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main style="padding:12px;">
+      <div class="preview" aria-live="polite">
+        <div class="swatches" id="swatches">
+          <div class="swatch" id="swatchA" style="background:#4A90E2;color:#fff;">
+            <div>Color A</div>
+            <small id="labelA">#4A90E2</small>
+          </div>
+          <div class="swatch" id="swatchB" style="background:#ffffff;color:#0f172a;">
+            <div>Color B</div>
+            <small id="labelB">#ffffff</small>
+          </div>
+        </div>
+        <div style="padding:12px;display:flex;gap:12px;align-items:center;flex-direction:column;">
+          <div style="width:100%;background:transparent;padding:12px;border-radius:10px;">
+            <div style="padding:18px;border-radius:10px;border:1px dashed #e6f4ff;">
+              <p style="margin:0;font-size:18px;" id="sampleText">The quick brown fox jumps over the lazy dog</p>
+              <p style="margin:6px 0 0 0;font-size:14px;color:var(--muted)">Preview of text using the selected colors.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="results" style="margin-top:12px;">
+        <div class="result-row"><div class="small">Foreground:</div><div id="fgVal">—</div></div>
+        <div class="result-row"><div class="small">Background:</div><div id="bgVal">—</div></div>
+        <div class="result-row"><div class="small">Contrast ratio:</div><div id="ratioVal">—</div></div>
+        <div class="result-row"><div class="small">Pass (Normal text):</div><div id="normalPass">—</div></div>
+        <div class="result-row"><div class="small">Pass (Large text):</div><div id="largePass">—</div></div>
+        <div class="result-row"><div class="small">AAA:</div><div id="aaaPass">—</div></div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="small">Built for your multi-tool website • Skyblue & white theme</div>
+      <div class="small">Tip: click the color swatches to swap foreground/background.</div>
+    </footer>
+  </div>
+
+  <script>
+    // Utility: parse color strings (hex, rgb, hsl) to RGB array [r,g,b]
+    function clamp(v,min=0,max=255){return Math.min(max,Math.max(min,Math.round(v)))}
+
+    function hexToRgb(hex){
+      hex = hex.replace('#','').trim();
+      if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+      if(hex.length!==6) return null;
+      const n=parseInt(hex,16);
+      return [(n>>16)&255,(n>>8)&255,n&255];
+    }
+
+    function rgbStringToRgb(s){
+      const m = s.match(/rgba?\(([^)]+)\)/i);
+      if(!m) return null;
+      const parts = m[1].split(',').map(p=>p.trim());
+      return [parseFloat(parts[0]),parseFloat(parts[1]),parseFloat(parts[2])];
+    }
+
+    function hslToRgbString(s){
+      const m = s.match(/hsla?\(([^)]+)\)/i);
+      if(!m) return null;
+      const parts = m[1].split(',').map(p=>p.trim());
+      let h = parseFloat(parts[0]);
+      let s1 = parseFloat(parts[1].replace('%',''))/100;
+      let l = parseFloat(parts[2].replace('%',''))/100;
+      h = ((h%360)+360)/360;
+      const q = l < 0.5 ? l * (1 + s1) : l + s1 - l * s1;
+      const p = 2 * l - q;
+      const hk = h;
+      const tc = [hk + 1/3, hk, hk - 1/3];
+      const rgb = tc.map(t=>{
+        if(t<0) t+=1;
+        if(t>1) t-=1;
+        if(t < 1/6) return p + (q - p) * 6 * t;
+        if(t < 1/2) return q;
+        if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      }).map(v=>Math.round(v*255));
+      return rgb;
+    }
+
+    function parseColor(input){
+      if(!input || typeof input!=='string') return null;
+      input = input.trim();
+      // hex
+      if(/^#?[0-9A-Fa-f]{3}$/.test(input) || /^#?[0-9A-Fa-f]{6}$/.test(input)){
+        return hexToRgb(input);
+      }
+      // rgb()
+      if(/rgba?\(/i.test(input)){
+        return rgbStringToRgb(input);
+      }
+      // hsl()
+      if(/hsla?\(/i.test(input)){
+        return hslToRgbString(input);
+      }
+      return null;
+    }
+
+    // Relative luminance per WCAG
+    function sRGBtoLin(v){
+      v = v/255;
+      return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
+    }
+
+    function luminance(rgb){
+      const r = sRGBtoLin(rgb[0]);
+      const g = sRGBtoLin(rgb[1]);
+      const b = sRGBtoLin(rgb[2]);
+      return 0.2126*r + 0.7152*g + 0.0722*b;
+    }
+
+    function contrastRatio(rgbA, rgbB){
+      const L1 = luminance(rgbA);
+      const L2 = luminance(rgbB);
+      const lighter = Math.max(L1,L2);
+      const darker = Math.min(L1,L2);
+      return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    // Helpers: format rgb to hex
+    function rgbToHex(rgb){
+      return '#'+rgb.map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();
+    }
+
+    // DOM
+    const colorAInput = document.getElementById('colorA');
+    const colorBInput = document.getElementById('colorB');
+    const pickerA = document.getElementById('pickerA');
+    const pickerB = document.getElementById('pickerB');
+    const checkBtn = document.getElementById('checkBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const swatchA = document.getElementById('swatchA');
+    const swatchB = document.getElementById('swatchB');
+    const labelA = document.getElementById('labelA');
+    const labelB = document.getElementById('labelB');
+    const ratioEl = document.getElementById('ratio');
+    const passFail = document.getElementById('passFail');
+    const fgVal = document.getElementById('fgVal');
+    const bgVal = document.getElementById('bgVal');
+    const ratioVal = document.getElementById('ratioVal');
+    const normalPass = document.getElementById('normalPass');
+    const largePass = document.getElementById('largePass');
+    const aaaPass = document.getElementById('aaaPass');
+    const sampleText = document.getElementById('sampleText');
+    const modeSelect = document.getElementById('mode');
+    const copyRatio = document.getElementById('copyRatio');
+    const copyCss = document.getElementById('copyCss');
+    const swatches = document.getElementById('swatches');
+
+    // init values
+    colorAInput.value = '#4A90E2';
+    colorBInput.value = '#FFFFFF';
+    pickerA.value = '#4A90E2';
+    pickerB.value = '#FFFFFF';
+
+    function updateSwatches(rgbA, rgbB){
+      const hexA = rgbToHex(rgbA);
+      const hexB = rgbToHex(rgbB);
+      swatchA.style.background = hexA;
+      swatchB.style.background = hexB;
+      // decide text color based on contrast
+      swatchA.style.color = (contrastRatio(rgbA,[255,255,255])>=3 ? '#FFFFFF' : '#0f172a');
+      swatchB.style.color = (contrastRatio(rgbB,[255,255,255])>=3 ? '#FFFFFF' : '#0f172a');
+      labelA.textContent = hexA;
+      labelB.textContent = hexB;
+      sampleText.style.color = modeSelect.value === 'normal' ? hexA : hexB;
+      sampleText.style.background = modeSelect.value === 'normal' ? hexB : hexA;
+      // set border for preview area subtly
+    }
+
+    function showResults(rgbA, rgbB){
+      const ratio = contrastRatio(rgbA,rgbB);
+      const rRound = Math.round(ratio*100)/100;
+      ratioEl.textContent = rRound + ':1';
+      ratioVal.textContent = rRound + ':1';
+      fgVal.textContent = rgbToHex(rgbA) + ' — rgb(' + rgbA.join(',') + ')';
+      bgVal.textContent = rgbToHex(rgbB) + ' — rgb(' + rgbB.join(',') + ')';
+
+      const normal = rRound >= 4.5;
+      const large = rRound >= 3;
+      const aaa = rRound >= 7;
+
+      normalPass.textContent = normal ? 'Pass' : 'Fail';
+      largePass.textContent = large ? 'Pass' : 'Fail';
+      aaaPass.textContent = aaa ? 'Pass' : 'Fail';
+
+      passFail.innerHTML = '';
+      const chip = document.createElement('span');
+      chip.className = 'chip ' + (normal ? 'pass' : 'fail');
+      chip.textContent = normal ? 'AA ✔' : 'AA ✖';
+      passFail.appendChild(chip);
+
+      // update sample text attributes
+      sampleText.style.color = modeSelect.value === 'normal' ? rgbToHex(rgbA) : rgbToHex(rgbB);
+      sampleText.style.background = modeSelect.value === 'normal' ? rgbToHex(rgbB) : rgbToHex(rgbA);
+      sampleText.style.padding = '10px';
+      sampleText.style.borderRadius = '8px';
+
+      updateSwatches(rgbA,rgbB);
+    }
+
+    function tryParseAndShow(){
+      const inA = colorAInput.value || pickerA.value;
+      const inB = colorBInput.value || pickerB.value;
+      const parsedA = parseColor(inA) || hexToRgb(pickerA.value.replace('#','')) || hexToRgb('4A90E2');
+      const parsedB = parseColor(inB) || hexToRgb(pickerB.value.replace('#','')) || hexToRgb('FFFFFF');
+      if(!parsedA || !parsedB) {
+        alert('Please provide valid color values (hex, rgb(), or hsl()).');
+        return;
+      }
+      showResults(parsedA, parsedB);
+    }
+
+    checkBtn.addEventListener('click', (e)=>{ tryParseAndShow(); });
+
+    // live when color pickers change
+    pickerA.addEventListener('input', e=>{
+      colorAInput.value = e.target.value;
+      tryParseAndShow();
+    });
+    pickerB.addEventListener('input', e=>{
+      colorBInput.value = e.target.value;
+      tryParseAndShow();
+    });
+
+    // allow pressing Enter to check
+    colorAInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryParseAndShow(); });
+    colorBInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryParseAndShow(); });
+
+    clearBtn.addEventListener('click', ()=>{
+      colorAInput.value=''; colorBInput.value='';
+      pickerA.value='#000000'; pickerB.value='#ffffff';
+      ratioEl.textContent='—'; ratioVal.textContent='—'; fgVal.textContent='—'; bgVal.textContent='—';
+      normalPass.textContent='—'; largePass.textContent='—'; aaaPass.textContent='—';
+      labelA.textContent='—'; labelB.textContent='—';
+      swatchA.style.background='#f3f7ff'; swatchB.style.background='#ffffff';
+      passFail.innerHTML='<span class="chip fail">—</span>';
+      sampleText.style.color=''; sampleText.style.background='';
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      colorAInput.value='#4A90E2'; colorBInput.value='#FFFFFF'; pickerA.value='#4A90E2'; pickerB.value='#FFFFFF';
+      modeSelect.value='normal'; tryParseAndShow();
+    });
+
+    copyRatio.addEventListener('click', ()=>{
+      const text = ratioVal.textContent || ratioEl.textContent;
+      if(!text || text==='—') return;
+      navigator.clipboard.writeText(text).then(()=>{
+        copyRatio.textContent='Copied!';
+        setTimeout(()=>copyRatio.textContent='Copy ratio',1200);
+      });
+    });
+
+    copyCss.addEventListener('click', ()=>{
+      const fg = parseColor(colorAInput.value) || hexToRgb(pickerA.value.replace('#',''));
+      const bg = parseColor(colorBInput.value) || hexToRgb(pickerB.value.replace('#',''));
+      if(!fg||!bg) return alert('Provide valid colors first.');
+      const css = `/* Foreground on background */\n.color-sample { color: ${rgbToHex(fg)}; background: ${rgbToHex(bg)}; }`;
+      navigator.clipboard.writeText(css).then(()=>{
+        copyCss.textContent='Copied CSS!';
+        setTimeout(()=>copyCss.textContent='Copy CSS',1200);
+      });
+    });
+
+    // swap on swatch click
+    swatches.addEventListener('click', e=>{
+      const target = e.target.closest('.swatch');
+      if(!target) return;
+      // swap colors
+      const a = colorAInput.value;
+      const b = colorBInput.value;
+      colorAInput.value = b;
+      colorBInput.value = a;
+      pickerA.value = colorAInput.value || pickerA.value;
+      pickerB.value = colorBInput.value || pickerB.value;
+      tryParseAndShow();
+    });
+
+    modeSelect.addEventListener('change', ()=>{ tryParseAndShow(); });
+
+    // initial calculation
+    tryParseAndShow();
+
+    // small accessibility: focus styles
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='Tab') document.body.classList.add('show-focus');
+    });
+  </script>
+</body>
+</html>
