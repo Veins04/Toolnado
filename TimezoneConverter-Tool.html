@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Zone Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f9ff;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .converter-container {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #0077b6;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 5px;
+      font-weight: bold;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #90e0ef;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      outline: none;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #00b4d8;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0077b6;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #0077b6;
+    }
+
+    @media (max-width: 600px) {
+      .converter-container {
+        padding: 20px;
+      }
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="converter-container">
+    <h2>🌍 Time Zone Converter</h2>
+
+    <label for="fromTime">Enter Time</label>
+    <input type="time" id="fromTime">
+
+    <label for="fromZone">From Time Zone</label>
+    <select id="fromZone">
+      <option value="UTC">UTC</option>
+      <option value="America/New_York">New York (EST/EDT)</option>
+      <option value="Europe/London">London (GMT/BST)</option>
+      <option value="Europe/Paris">Paris (CET/CEST)</option>
+      <option value="Asia/Kolkata">India (IST)</option>
+      <option value="Asia/Tokyo">Tokyo (JST)</option>
+      <option value="Australia/Sydney">Sydney (AEST/AEDT)</option>
+    </select>
+
+    <label for="toZone">To Time Zone</label>
+    <select id="toZone">
+      <option value="UTC">UTC</option>
+      <option value="America/New_York">New York (EST/EDT)</option>
+      <option value="Europe/London">London (GMT/BST)</option>
+      <option value="Europe/Paris">Paris (CET/CEST)</option>
+      <option value="Asia/Kolkata">India (IST)</option>
+      <option value="Asia/Tokyo">Tokyo (JST)</option>
+      <option value="Australia/Sydney">Sydney (AEST/AEDT)</option>
+    </select>
+
+    <div>
+      <button onclick="convertTime()">Convert</button>
+      <button onclick="resetForm()">Clear</button>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    function convertTime() {
+      const fromTime = document.getElementById("fromTime").value;
+      const fromZone = document.getElementById("fromZone").value;
+      const toZone = document.getElementById("toZone").value;
+      const resultDiv = document.getElementById("result");
+
+      if (!fromTime) {
+        resultDiv.textContent = "⚠️ Please enter a time.";
+        return;
+      }
+
+      // Split input into hours & minutes
+      const [hours, minutes] = fromTime.split(":");
+      const now = new Date();
+
+      // Create a date object in the "fromZone"
+      const fromDate = new Date(Date.UTC(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        hours,
+        minutes
+      ));
+
+      try {
+        // Convert using Intl API
+        const options = {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+          timeZone: toZone
+        };
+
+        const formatted = new Intl.DateTimeFormat([], options).format(fromDate);
+        resultDiv.textContent = `⏱ Equivalent Time: ${formatted} (${toZone})`;
+      } catch (err) {
+        resultDiv.textContent = "❌ Invalid conversion. Please try again.";
+      }
+    }
+
+    function resetForm() {
+      document.getElementById("fromTime").value = "";
+      document.getElementById("fromZone").selectedIndex = 0;
+      document.getElementById("toZone").selectedIndex = 0;
+      document.getElementById("result").textContent = "";
+    }
+  </script>
+</body>
+</html>
