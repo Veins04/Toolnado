@@ -81,6 +81,22 @@
       color: #333;
     }
 
+    .download-btn {
+      margin-top: 10px;
+      display: inline-block;
+      background: skyblue;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: 0.3s;
+    }
+
+    .download-btn:hover {
+      background: #1c97d0;
+    }
+
     @media (max-width: 600px) {
       header {
         font-size: 1.2rem;
@@ -143,11 +159,22 @@
             const title = document.createElement("h3");
             title.textContent = name;
 
+            let downloadBtn = document.createElement("a");
+            downloadBtn.className = "download-btn";
+            downloadBtn.textContent = "Download " + name;
+
             if (matrix === null) {
               const originalImg = document.createElement("img");
               originalImg.src = img.src;
+
+              // set download link for original
+              downloadBtn.href = img.src;
+              downloadBtn.download = `${name}.png`;
+
               card.appendChild(title);
               card.appendChild(originalImg);
+              card.appendChild(downloadBtn);
+
             } else {
               const canvas = document.createElement("canvas");
               const ctx = canvas.getContext("2d");
@@ -164,8 +191,14 @@
                 data[i + 2] = r * matrix[2][0] + g * matrix[2][1] + b * matrix[2][2];
               }
               ctx.putImageData(imageData, 0, 0);
+
+              // set download link for simulated image
+              downloadBtn.href = canvas.toDataURL("image/png");
+              downloadBtn.download = `${name}.png`;
+
               card.appendChild(title);
               card.appendChild(canvas);
+              card.appendChild(downloadBtn);
             }
             gallery.appendChild(card);
           });
