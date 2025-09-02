@@ -1,290 +1,127 @@
-<!doctype html>
+  
+  <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Image To Text</title>
-  <meta name="description" content="Skyblue & white OCR tool using Tesseract.js — upload, preview, extract, copy & download text." />
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image to Text Tool</title>
   <style>
-    :root{
-      --sky: #61b2e4; /* skyblue */
-      --sky-600: #2f9bd1;
-      --white: #ffffff;
-      --muted: #6b7280;
-      --glass: rgba(255,255,255,0.85);
-      --card-shadow: 0 6px 18px rgba(25, 40, 60, 0.08);
-      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      color: #000;
+      margin: 0;
+      padding: 0;
     }
 
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--white),#f7fbff);color:#0f172a}
-
-    .wrap{max-width:980px;margin:28px auto;padding:18px}
-
-    header{display:flex;gap:12px;align-items:center}
-    .brand{display:flex;gap:12px;align-items:center}
-    .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--sky),var(--sky-600));display:flex;align-items:center;justify-content:center;color:var(--white);font-weight:700}
-    h1{font-size:18px;margin:0}
-    p.lead{margin:4px 0 0;color:var(--muted);font-size:13px}
-
-    .card{background:var(--glass);backdrop-filter:blur(6px);border-radius:14px;padding:16px;box-shadow:var(--card-shadow);margin-top:14px}
-
-    .grid{display:grid;grid-template-columns:1fr 420px;gap:16px}
-
-    /* left panel */
-    .controls{display:flex;flex-direction:column;gap:12px}
-    .dropzone{border:2px dashed rgba(47,155,209,0.28);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;min-height:220px;background:linear-gradient(180deg,rgba(97,178,228,0.06),transparent)}
-    .dropzone.dragover{border-color:var(--sky-600);background:linear-gradient(180deg,rgba(47,155,209,0.04),rgba(47,155,209,0.02))}
-    .dropzone input{display:none}
-
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
-    .btn-primary{background:var(--sky-600);color:var(--white)}
-    .btn-ghost{background:transparent;border:1px solid rgba(15,23,42,0.06);color:var(--muted)}
-
-    .preview{display:flex;flex-direction:column;gap:8px;align-items:center}
-    .preview img{max-width:100%;max-height:260px;border-radius:10px;box-shadow:0 8px 30px rgba(47,155,209,0.06)}
-    .meta{font-size:13px;color:var(--muted)}
-
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
-
-    /* right panel */
-    .output{display:flex;flex-direction:column;height:100%;gap:10px}
-    .toolbar{display:flex;gap:10px;align-items:center}
-    textarea.extract{flex:1;min-height:300px;padding:12px;border-radius:10px;border:1px solid rgba(15,23,42,0.06);resize:vertical;background:linear-gradient(180deg,var(--white),#fbfdff);font-family:inherit;line-height:1.45}
-
-    .progress{height:10px;background:#e6f5fb;border-radius:999px;overflow:hidden}
-    .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--sky),var(--sky-600));transition:width .12s linear}
-
-    footer.note{margin-top:12px;color:var(--muted);font-size:13px}
-
-    @media (max-width:920px){
-      .grid{grid-template-columns:1fr}
-      .preview img{max-height:220px}
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 1rem;
     }
 
-    @media (max-width:480px){
-      h1{font-size:16px}
-      .logo{width:42px;height:42px}
+    h1 {
+      text-align: center;
+      color: #007bff;
+    }
+
+    .upload-section {
+      background: #ffffff;
+      border: 2px dashed #007bff;
+      padding: 2rem;
+      text-align: center;
+      border-radius: 10px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    label[for="imageInput"] {
+      background-color: #007bff;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #output {
+      margin-top: 1rem;
+      background: #e6f0ff;
+      padding: 1rem;
+      border-radius: 5px;
+      white-space: pre-wrap;
+    }
+
+    button.copy-btn {
+      margin-top: 0.5rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 0.5rem;
+      }
+
+      .upload-section {
+        padding: 1rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="brand">
-        <div class="logo">OCR</div>
-        <div>
-          <h1>Image To Text</h1>
-          <p class="lead">Upload an image, preview it, and extract readable text using Tesseract.js (client-side).</p>
-        </div>
-      </div>
-    </header>
-
-    <div class="card">
-      <div class="grid">
-
-        <!-- LEFT: Upload & preview -->
-        <div class="controls">
-
-          <label class="dropzone" id="dropzone">
-            <input id="fileInput" type="file" accept="image/*">
-            <strong>Drag & drop an image here</strong>
-            <span class="meta">or click to browse • PNG, JPG, HEIC (if browser supports), GIF (single-frame)</span>
-            <small class="meta">Tip: clean, high-contrast images give better OCR results.</small>
-          </label>
-
-          <div class="preview card" id="previewCard" style="display:none">
-            <div style="width:100%;display:flex;justify-content:space-between;align-items:center">
-              <div class="meta" id="fileInfo"></div>
-              <div style="display:flex;gap:8px">
-                <button class="btn btn-ghost" id="clearBtn">Clear</button>
-              </div>
-            </div>
-
-            <div class="preview-image" style="width:100%"><img id="previewImage" alt="Uploaded preview"></div>
-            <div style="width:100%" class="actions">
-              <button class="btn btn-primary" id="extractBtn">Extract Text</button>
-              <button class="btn btn-ghost" id="downloadImgBtn">Download Image</button>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- RIGHT: Extracted text & progress -->
-        <div class="output">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div class="toolbar">
-              <button class="btn btn-ghost" id="copyBtn">Copy</button>
-              <button class="btn btn-ghost" id="downloadTxtBtn">Download Text</button>
-            </div>
-            <div class="meta">Status: <span id="status">Idle</span></div>
-          </div>
-
-          <div class="progress" aria-hidden="true"><i id="progBar"></i></div>
-          <textarea id="extractedText" class="extract" placeholder="Extracted text will appear here..." readonly></textarea>
-
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <small class="meta">This OCR runs completely in your browser — images and text are not uploaded to servers.</small>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-ghost" id="langBtn">Language: eng</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <footer class="note">Supports multiple engines & workers via Tesseract.js. For best results, crop or rotate images before extracting when necessary.</footer>
+  <div class="container">
+    <h1>Image to Text</h1>
+    <div class="upload-section">
+      <label for="imageInput">Upload Image</label>
+      <input type="file" id="imageInput" accept="image/*" />
     </div>
+    <div id="output" style="display:none;"></div>
+    <button class="copy-btn" style="display:none;" onclick="copyText()">Copy Text</button>
   </div>
 
-  <!-- Tesseract.js from CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.4/dist/tesseract.min.js"></script>
   <script>
-    // Elements
-    const dropzone = document.getElementById('dropzone');
-    const fileInput = document.getElementById('fileInput');
-    const previewCard = document.getElementById('previewCard');
-    const previewImage = document.getElementById('previewImage');
-    const fileInfo = document.getElementById('fileInfo');
-    const clearBtn = document.getElementById('clearBtn');
-    const extractBtn = document.getElementById('extractBtn');
-    const downloadImgBtn = document.getElementById('downloadImgBtn');
+    const imageInput = document.getElementById('imageInput');
+    const output = document.getElementById('output');
+    const copyBtn = document.querySelector('.copy-btn');
 
-    const statusSpan = document.getElementById('status');
-    const progBar = document.getElementById('progBar');
-    const extractedText = document.getElementById('extractedText');
-    const copyBtn = document.getElementById('copyBtn');
-    const downloadTxtBtn = document.getElementById('downloadTxtBtn');
-    const langBtn = document.getElementById('langBtn');
+    imageInput.addEventListener('change', async () => {
+      if (imageInput.files.length === 0) return;
 
-    let currentFile = null;
-    let worker = null;
-    let currentLang = 'eng';
+      const file = imageInput.files[0];
+      const reader = new FileReader();
 
-    // Utility
-    function setStatus(text){statusSpan.textContent = text}
-    function setProgress(pct){progBar.style.width = pct + '%'}
+      reader.onload = async () => {
+        output.style.display = 'block';
+        output.textContent = 'Processing...';
 
-    // Drag & drop behavior
-    ['dragenter','dragover'].forEach(evt => dropzone.addEventListener(evt, e => {e.preventDefault();e.stopPropagation();dropzone.classList.add('dragover')}));
-    ['dragleave','drop'].forEach(evt => dropzone.addEventListener(evt, e => {e.preventDefault();e.stopPropagation();dropzone.classList.remove('dragover')}));
+        try {
+          const result = await Tesseract.recognize(reader.result, 'eng');
+          output.textContent = result.data.text;
+          copyBtn.style.display = 'inline-block';
+        } catch (err) {
+          output.textContent = 'Error processing image.';
+          console.error(err);
+        }
+      };
 
-    dropzone.addEventListener('drop', e => {
-      const dt = e.dataTransfer;
-      if(!dt) return;
-      const files = dt.files;
-      if(files && files.length) handleFile(files[0]);
+      reader.readAsDataURL(file);
     });
 
-    dropzone.addEventListener('click', ()=> fileInput.click());
-    fileInput.addEventListener('change', e => { if(e.target.files && e.target.files[0]) handleFile(e.target.files[0]); });
-
-    clearBtn.addEventListener('click', clearAll);
-    downloadImgBtn.addEventListener('click', downloadImage);
-    extractBtn.addEventListener('click', doOCR);
-    copyBtn.addEventListener('click', copyText);
-    downloadTxtBtn.addEventListener('click', downloadText);
-    langBtn.addEventListener('click', toggleLang);
-
-    function handleFile(file){
-      if(!file.type.startsWith('image/')){alert('Please upload an image file.');return}
-      currentFile = file;
-      const url = URL.createObjectURL(file);
-      previewImage.src = url;
-      previewImage.onload = ()=> URL.revokeObjectURL(url);
-      previewCard.style.display = 'block';
-      fileInfo.textContent = `${file.name} • ${(file.size/1024|0)} KB`;
-      extractedText.value = '';
-      setStatus('Ready');
-      setProgress(0);
-    }
-
-    function clearAll(){
-      currentFile = null;
-      previewCard.style.display = 'none';
-      previewImage.src = '';
-      extractedText.value = '';
-      setStatus('Idle');
-      setProgress(0);
-    }
-
-    function downloadImage(){
-      if(!currentFile) return;
-      const a = document.createElement('a');
-      a.href = previewImage.src;
-      a.download = currentFile.name || 'image';
-      document.body.appendChild(a);a.click();a.remove();
-    }
-
-    function copyText(){
-      if(!extractedText.value) return;
-      navigator.clipboard.writeText(extractedText.value).then(()=>{
-        setStatus('Copied to clipboard');
-        setTimeout(()=>setStatus('Ready'),1200);
-      }).catch(()=>alert('Copy failed'));
-    }
-
-    function downloadText(){
-      const txt = extractedText.value || '';
-      const blob = new Blob([txt],{type:'text/plain;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;a.download = 'extracted-text.txt';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
-    }
-
-    function toggleLang(){
-      // Simple toggle demo — expandable to a language picker
-      currentLang = (currentLang === 'eng') ? 'eng+spa' : 'eng';
-      langBtn.textContent = `Language: ${currentLang}`;
-    }
-
-    async function doOCR(){
-      if(!currentFile){alert('Please upload an image first.');return}
-
-      setStatus('Initializing OCR...');
-      setProgress(4);
-
-      // Create a Tesseract worker
-      if(worker) try{ await worker.terminate() }catch(e){}
-
-      worker = Tesseract.createWorker({
-        logger: m => {
-          // progress messages from Tesseract
-          if(m.status){
-            setStatus(m.status + (m.progress ? ` (${Math.round(m.progress*100)}%)` : ''));
-          }
-          if(typeof m.progress === 'number'){
-            setProgress(Math.min(100, Math.round(m.progress*100)));
-          }
-        }
+    function copyText() {
+      const text = output.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Text copied to clipboard!');
       });
-
-      try{
-        await worker.load();
-        await worker.loadLanguage('eng');
-        await worker.initialize('eng');
-        // if you want multiple langs: await worker.loadLanguage('spa'); await worker.initialize('eng+spa');
-
-        setStatus('Recognizing text...');
-        const result = await worker.recognize(currentFile);
-        extractedText.value = result.data && result.data.text ? result.data.text.trim() : '';
-        setStatus('Done');
-        setProgress(100);
-      }catch(err){
-        console.error(err);
-        setStatus('Error');
-        alert('OCR failed. See console for details.');
-      }finally{
-        try{ await worker.terminate(); worker = null }catch(e){}
-      }
     }
-
-    // Accessibility: allow keyboard upload via dropzone
-    dropzone.tabIndex = 0;
-    dropzone.addEventListener('keypress', e => { if(e.key === 'Enter' || e.key === ' ') fileInput.click(); });
-
   </script>
 </body>
 </html>
+  
+  
