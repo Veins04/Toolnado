@@ -1,101 +1,236 @@
-  
-  
-  <!-- privacy-policy.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Privacy Policy</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Toolnado Privacy Policy." />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
-    h1 { color: #333; }
+    :root{
+      --sky-50:#f0f8ff; /* very light sky */
+      --sky-100:#e6f5ff;
+      --sky-200:#cae9ff;
+      --sky-300:#9fd6ff;
+      --sky-500:#38bdf8; /* accent */
+      --sky-600:#0ea5e9; /* brand */
+      --ink:#0f172a;      /* slate-900 */
+      --muted:#475569;    /* slate-600 */
+      --card:#ffffff;
+      --ring:#bae6fd;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 600px at 100% -10%, var(--sky-200), transparent 60%),
+        radial-gradient(1000px 500px at -10% 0%, var(--sky-100), transparent 55%),
+        linear-gradient(#ffffff, #ffffff);
+    }
+    header{
+      background: linear-gradient(135deg, var(--sky-600), var(--sky-300));
+      color:#fff;
+      padding:48px 16px 64px;
+      position:relative;
+      overflow:hidden;
+    }
+    header .wrap{max-width:980px;margin:0 auto;display:flex;gap:16px;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:44px;height:44px;border-radius:12px;
+      background:#fff1; border:1px solid #fff3;
+      display:grid;place-items:center;backdrop-filter: blur(2px);
+      box-shadow:0 10px 20px #0002;
+    }
+    .logo::after{content:"🛠️";font-size:22px;}
+    h1{margin:0;font-size:clamp(1.4rem, 2.2vw + 1rem, 2.2rem);letter-spacing:.3px}
+    header p{margin:.4rem 0 0;opacity:.95}
+    nav.breadcrumb{margin-top:10px;font-size:.95rem;opacity:.95}
+    nav.breadcrumb a{color:#fff;text-decoration:none;border-bottom:1px dashed #fff7}
+
+    main{max-width:980px;margin:-40px auto 56px;padding:0 16px}
+    .card{
+      background:var(--card);
+      border:1px solid var(--ring);
+      border-radius:18px;
+      box-shadow:0 10px 30px #0ea5e911;
+      padding:28px;
+    }
+    .meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:var(--muted);font-size:.95rem;margin-bottom:6px}
+    .actions{margin-left:auto;display:flex;gap:10px}
+    .btn{appearance:none;border:1px solid var(--ring);background:#fff;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .btn:hover{border-color:var(--sky-500);box-shadow:0 0 0 4px #38bdf822}
+
+    h2{margin-top:1.6rem;font-size:1.35rem}
+    p{line-height:1.7}
+    ol{
+      counter-reset:item;
+      list-style:none;
+      padding-left:0;
+      margin:0;
+    }
+    ol > li{
+      counter-increment:item;
+      margin:18px 0 0;
+      padding:16px 16px 8px;
+      border-left:4px solid var(--sky-300);
+      background:linear-gradient(0deg, var(--sky-50), #fff);
+      border-radius:14px;
+    }
+    ol > li::marker{display:none}
+    ol > li > h3{margin:0 0 .4rem;font-size:1.1rem}
+    code.copyable{user-select:all;background:var(--sky-50);padding:2px 6px;border-radius:6px;border:1px dashed var(--ring)}
+
+    footer{max-width:980px;margin:20px auto 60px;padding:0 16px;color:var(--muted);font-size:.95rem}
+    .footer-card{background:#fff;border:1px solid var(--ring);border-radius:14px;padding:16px}
+
+    a{color:var(--sky-600)}
+
+    /* Print styles */
+    @media print{
+      header{background:#fff;color:#000;border-bottom:2px solid var(--sky-300);padding:16px}
+      .btn, .actions, nav.breadcrumb{display:none !important}
+      body{background:#fff}
+      .card, .footer-card{box-shadow:none}
+    }
   </style>
 </head>
 <body>
-  <h1>Privacy Policy</h1>
-  <p>At Toolnado, accessible from [your website URL], your privacy is extremely important to us. This Privacy Policy document outlines the types of personal information collected and recorded by Toolnado and how we use it. By using our website, you agree to the terms described in this policy.
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Privacy Policy</h1>
+          <p>Toolnado</p>
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="/">Home</a> ▸ <span aria-current="page">Privacy Policy</span>
+          </nav>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="window.print()" title="Print this policy">🖨️ Print</button>
+        <button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">⬆️ Top</button>
+      </div>
+    </div>
+  </header>
 
-1. Information We Collect
+  <main>
+    <article class="card" id="policy">
+      <div class="meta">
+        <span>Effective date: <strong id="effectiveDate">—</strong></span>
+        <span>•</span>
+        <span>Last updated: <strong id="lastUpdated">—</strong></span>
+      </div>
 
-We may collect the following types of information:
+      <p>
+        At <strong>Toolnado</strong>, accessible from <code class="copyable">[your website URL]</code>, your privacy is extremely important to us. This Privacy Policy document outlines the types of personal information collected and recorded by Toolnado and how we use it. By using our website, you agree to the terms described in this policy.
+      </p>
 
-Personal Information: Such as name, email address, or contact details, only if you voluntarily provide it (e.g., through forms, subscriptions, or support requests).
+      <ol>
+        <li>
+          <h3>1. Information We Collect</h3>
+          <p>We may collect the following types of information:</p>
+          <ul>
+            <li><strong>Personal Information:</strong> Such as name, email address, or contact details, only if you voluntarily provide it (e.g., through forms, subscriptions, or support requests).</li>
+            <li><strong>Non‑Personal Information:</strong> Including browser type, device information, operating system, IP address, and website usage statistics.</li>
+            <li><strong>User‑Generated Content:</strong> Data or files you upload or create using our tools.</li>
+          </ul>
+        </li>
 
-Non-Personal Information: Including browser type, device information, operating system, IP address, and website usage statistics.
+        <li>
+          <h3>2. How We Use Your Information</h3>
+          <p>The information we collect is used to:</p>
+          <ul>
+            <li>Provide, operate, and improve our tools and services.</li>
+            <li>Enhance user experience and website performance.</li>
+            <li>Communicate with you, including sending updates or support messages.</li>
+            <li>Analyze trends and prevent fraudulent or malicious activities.</li>
+            <li>Comply with legal obligations.</li>
+          </ul>
+        </li>
 
-User-Generated Content: Data or files you upload or create using our tools.
+        <li>
+          <h3>3. Cookies and Tracking Technologies</h3>
+          <p>Toolnado uses cookies and similar technologies to:</p>
+          <ul>
+            <li>Store user preferences.</li>
+            <li>Improve tool functionality and personalization.</li>
+            <li>Collect anonymous usage statistics for analytics.</li>
+          </ul>
+          <p>You can choose to disable cookies through your browser settings, but some parts of the site may not function properly.</p>
+        </li>
 
-2. How We Use Your Information
+        <li>
+          <h3>4. Third‑Party Services</h3>
+          <p>We may use trusted third‑party services (such as analytics providers or ad networks) to help operate our website. These third parties may collect information as governed by their own privacy policies.</p>
+        </li>
 
-The information we collect is used to:
+        <li>
+          <h3>5. Data Security</h3>
+          <p>We use industry‑standard measures to protect your personal information against unauthorized access, alteration, or disclosure. However, please note that no method of transmission over the internet is 100% secure.</p>
+        </li>
 
-Provide, operate, and improve our tools and services.
+        <li>
+          <h3>6. Data Sharing</h3>
+          <p>We do not sell, trade, or rent your personal information to others. Information may be shared only in the following cases:</p>
+          <ul>
+            <li>With your consent.</li>
+            <li>With service providers assisting in website operations (under confidentiality agreements).</li>
+            <li>When required by law, regulation, or legal process.</li>
+          </ul>
+        </li>
 
-Enhance user experience and website performance.
+        <li>
+          <h3>7. Children’s Privacy</h3>
+          <p>Toolnado does not knowingly collect personal information from children under 13. If you believe your child has provided such information, please contact us immediately, and we will take steps to remove it.</p>
+        </li>
 
-Communicate with you, including sending updates or support messages.
+        <li>
+          <h3>8. Your Rights</h3>
+          <p>Depending on your location, you may have the right to:</p>
+          <ul>
+            <li>Access, update, or delete your personal data.</li>
+            <li>Opt‑out of cookies and tracking technologies.</li>
+            <li>Withdraw consent to data collection at any time.</li>
+          </ul>
+          <p>To exercise these rights, please contact us at <code class="copyable">[your support email]</code>.</p>
+        </li>
 
-Analyze trends and prevent fraudulent or malicious activities.
+        <li>
+          <h3>9. Changes to This Privacy Policy</h3>
+          <p>We may update this Privacy Policy from time to time. Any changes will be posted on this page with the revised effective date. We encourage you to review this page regularly to stay informed.</p>
+        </li>
 
-Comply with legal obligations.
+        <li>
+          <h3>10. Contact Us</h3>
+          <p>If you have any questions or concerns regarding this Privacy Policy, please contact us at:</p>
+          <ul>
+            <li>📧 Email: <code class="copyable">[your email address]</code></li>
+            <li>🌐 Website: <code class="copyable">[your website URL]</code></li>
+          </ul>
+        </li>
+      </ol>
+    </article>
+  </main>
 
-3. Cookies and Tracking Technologies
+  <footer>
+    <div class="footer-card">
+      <p><strong>Note:</strong> Replace the placeholders <code class="copyable">[your website URL]</code>, <code class="copyable">[your support email]</code>, and <code class="copyable">[your email address]</code> with your actual details. This template is for general informational purposes and is not a substitute for legal advice.</p>
+    </div>
+  </footer>
 
-Toolnado uses cookies and similar technologies to:
-
-Store user preferences.
-
-Improve tool functionality and personalization.
-
-Collect anonymous usage statistics for analytics.
-You can choose to disable cookies through your browser settings, but some parts of the site may not function properly.
-
-4. Third-Party Services
-
-We may use trusted third-party services (such as analytics providers or ad networks) to help operate our website. These third parties may collect information as governed by their own privacy policies.
-
-5. Data Security
-
-We use industry-standard measures to protect your personal information against unauthorized access, alteration, or disclosure. However, please note that no method of transmission over the internet is 100% secure.
-
-6. Data Sharing
-
-We do not sell, trade, or rent your personal information to others. Information may be shared only in the following cases:
-
-With your consent.
-
-With service providers assisting in website operations (under confidentiality agreements).
-
-When required by law, regulation, or legal process.
-
-7. Children’s Privacy
-
-Toolnado does not knowingly collect personal information from children under 13. If you believe your child has provided such information, please contact us immediately, and we will take steps to remove it.
-
-8. Your Rights
-
-Depending on your location, you may have the right to:
-
-Access, update, or delete your personal data.
-
-Opt-out of cookies and tracking technologies.
-
-Withdraw consent to data collection at any time.
-To exercise these rights, please contact us at [your support email].
-
-9. Changes to This Privacy Policy
-
-We may update this Privacy Policy from time to time. Any changes will be posted on this page with the revised effective date. We encourage you to review this page regularly to stay informed.
-
-10. Contact Us
-
-If you have any questions or concerns regarding this Privacy Policy, please contact us at:
-
-📧 Email: [your email address]
-🌐 Website: [your website URL]</p>
+  <script>
+    (function(){
+      const now=new Date();
+      const fmt=(d)=>d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'2-digit'});
+      const effective=document.getElementById('effectiveDate');
+      const updated=document.getElementById('lastUpdated');
+      if(effective) effective.textContent = fmt(now);
+      if(updated) updated.textContent = fmt(now);
+    })();
+  </script>
 </body>
 </html>
-
-  
-    
