@@ -1,79 +1,198 @@
-  
-  
-  <!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Terms and Conditions</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terms & Conditions</title>
+  <meta name="description" content="Terms and Conditions for Toolnado" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
-    h1 { color: #333; }
+    :root{
+      --sky-100: #e6f7ff;
+      --sky-300: #9adfff;
+      --sky-500: #33b3ff;
+      --white: #ffffff;
+      --muted: #55585c;
+      --card-radius: 12px;
+      --max-width: 900px;
+      --shadow: 0 8px 30px rgba(13, 40, 63, 0.12);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background: linear-gradient(180deg, var(--sky-100) 0%, var(--white) 60%);
+      color: #0b2540;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .wrap{
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:48px 20px;
+      min-height:100%;
+      box-sizing:border-box;
+    }
+
+    .card{
+      width:100%;
+      max-width:var(--max-width);
+      background:var(--white);
+      border-radius:var(--card-radius);
+      box-shadow:var(--shadow);
+      padding:28px 32px;
+      border: 1px solid rgba(51,179,255,0.06);
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    .logo{
+      width:56px;
+      height:56px;
+      border-radius:10px;
+      background:linear-gradient(135deg, var(--sky-500), #60d0ff 120%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--white);
+      font-weight:700;
+      font-size:20px;
+      box-shadow: 0 6px 18px rgba(51,179,255,0.18);
+    }
+
+    h1{font-size:20px;margin:0;color:#0b2540}
+    p.lead{color:var(--muted);margin:12px 0 22px;font-size:15px;line-height:1.6}
+
+    ol.terms{padding-left:18px;margin:0;counter-reset:item;}
+    ol.terms > li{margin-bottom:14px;line-height:1.65}
+    ol.terms > li::marker{font-weight:700;color:var(--sky-500)}
+
+    .term-title{font-weight:700;color:#07324a;margin-bottom:6px}
+    a.policy-link{color:var(--sky-500);text-decoration:none}
+
+    .meta{
+      display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;align-items:center;
+    }
+
+    .small{font-size:13px;color:var(--muted)}
+
+    .actions{margin-top:20px;display:flex;gap:10px}
+    .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+    .btn-primary{background:var(--sky-500);color:var(--white)}
+    .btn-ghost{background:transparent;border:1px solid rgba(11,37,64,0.06)}
+
+    footer{margin-top:18px;font-size:13px;color:var(--muted);}
+
+    /* responsive */
+    @media (max-width:520px){
+      .card{padding:18px}
+      h1{font-size:18px}
+    }
   </style>
 </head>
 <body>
-  <h1>Terms and Conditions</h1>
-  <p>Welcome to Toolnado. By accessing or using our website, located at [your website URL], you agree to comply with and be bound by the following Terms & Conditions. Please read them carefully. If you do not agree to these terms, please do not use our services.
+  <div class="wrap">
+    <main class="card" role="main">
+      <header>
+        <div class="logo">T</div>
+        <div>
+          <h1>Terms &amp; Conditions</h1>
+          <div class="small">Last updated: <strong id="last-updated">September 3, 2025</strong></div>
+        </div>
+      </header>
 
-1. Use of Website
+      <p class="lead">Welcome to Toolnado. By accessing or using our website, located at <strong>[your website URL]</strong>, you agree to comply with and be bound by the following Terms &amp; Conditions. Please read them carefully. If you do not agree to these terms, please do not use our services.</p>
 
-Toolnado provides free and/or premium online tools for personal and professional use.
+      <ol class="terms">
+        <li>
+          <div class="term-title">1. Use of Website</div>
+          Toolnado provides free and/or premium online tools for personal and professional use. You agree to use the website only for lawful purposes and in a way that does not infringe upon the rights of others. Any misuse of our services (such as hacking, distributing malware, or abusing tools) is strictly prohibited.
+        </li>
 
-You agree to use the website only for lawful purposes and in a way that does not infringe upon the rights of others.
+        <li>
+          <div class="term-title">2. User Accounts (If Applicable)</div>
+          Certain features may require you to create an account. You are responsible for maintaining the confidentiality of your account credentials. You must provide accurate and complete information when registering. Toolnado reserves the right to suspend or terminate accounts that violate these terms.
+        </li>
 
-Any misuse of our services (such as hacking, distributing malware, or abusing tools) is strictly prohibited.
+        <li>
+          <div class="term-title">3. Intellectual Property</div>
+          All content, branding, design, code, and tools available on Toolnado are the property of Toolnado unless otherwise stated. You may use the tools for personal or business purposes but may not copy, redistribute, or resell them without prior permission.
+        </li>
 
-2. User Accounts (If Applicable)
+        <li>
+          <div class="term-title">4. Privacy</div>
+          Your use of Toolnado is also governed by our <a class="policy-link" href="[your privacy policy URL]">Privacy Policy</a>. Please review it to understand how we collect, use, and protect your information.
+        </li>
 
-Certain features may require you to create an account. You are responsible for maintaining the confidentiality of your account credentials.
+        <li>
+          <div class="term-title">5. Limitation of Liability</div>
+          Toolnado provides tools “as is” without warranties of any kind. We do not guarantee that our services will always be error-free, secure, or uninterrupted. Toolnado is not responsible for any data loss, damages, or issues resulting from the use of our tools.
+        </li>
 
-You must provide accurate and complete information when registering.
+        <li>
+          <div class="term-title">6. Third-Party Links</div>
+          Our website may contain links to third-party websites or services. Toolnado is not responsible for the content, policies, or practices of third-party sites.
+        </li>
 
-Toolnado reserves the right to suspend or terminate accounts that violate these terms.
+        <li>
+          <div class="term-title">7. Termination of Access</div>
+          Toolnado may suspend or terminate your access at any time if you violate these Terms &amp; Conditions or misuse our services.
+        </li>
 
-3. Intellectual Property
+        <li>
+          <div class="term-title">8. Changes to Terms</div>
+          We may update these Terms &amp; Conditions from time to time. Continued use of the website after changes means you accept the updated terms.
+        </li>
 
-All content, branding, design, code, and tools available on Toolnado are the property of Toolnado unless otherwise stated.
+        <li>
+          <div class="term-title">9. Governing Law</div>
+          These Terms &amp; Conditions shall be governed by and interpreted in accordance with the laws of <strong>[India/Chhattisgarh]</strong>.
+        </li>
 
-You may use the tools for personal or business purposes but may not copy, redistribute, or resell them without prior permission.
+        <li>
+          <div class="term-title">10. Contact Us</div>
+          If you have any questions about these Terms &amp; Conditions, please contact us:
+          <div style="margin-top:8px">
+            📧 Email: <strong>[your email address]</strong><br>
+            🌐 Website: <strong>[your website URL]</strong>
+          </div>
+        </li>
+      </ol>
 
-4. Privacy
+      <div class="meta">
+        <div class="small">Need to edit placeholders? Replace <strong>[your website URL]</strong> and <strong>[your email address]</strong> with your real details before publishing.</div>
+      </div>
 
-Your use of Toolnado is also governed by our Privacy Policy
-. Please review it to understand how we collect, use, and protect your information.
+      <div class="actions">
+        <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
+        <button class="btn btn-ghost" onclick="downloadHTML()">Download HTML</button>
+      </div>
 
-5. Limitation of Liability
+      <footer>
+        <p class="small">© <span id="year"></span> Toolnado. All rights reserved.</p>
+      </footer>
+    </main>
+  </div>
 
-Toolnado provides tools “as is” without warranties of any kind.
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-We do not guarantee that our services will always be error-free, secure, or uninterrupted.
-
-Toolnado is not responsible for any data loss, damages, or issues resulting from the use of our tools.
-
-6. Third-Party Links
-
-Our website may contain links to third-party websites or services. Toolnado is not responsible for the content, policies, or practices of third-party sites.
-
-7. Termination of Access
-
-Toolnado may suspend or terminate your access at any time if you violate these Terms & Conditions or misuse our services.
-
-8. Changes to Terms
-
-We may update these Terms & Conditions from time to time. Continued use of the website after changes means you accept the updated terms.
-
-9. Governing Law
-
-These Terms & Conditions shall be governed by and interpreted in accordance with the laws of [India/Chhattisgarh].
-
-10. Contact Us
-
-If you have any questions about these Terms & Conditions, please contact us:
-
-📧 Email: [your email address]
-🌐 Website: [your website URL]</p>
+    function downloadHTML(){
+      const content = `<!doctype html>${document.documentElement.innerHTML}`;
+      const blob = new Blob([content], {type: 'text/html'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'terms-and-conditions.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  </script>
 </body>
 </html>
-
-  
-   
