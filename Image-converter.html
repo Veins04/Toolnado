@@ -1,16 +1,16 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
    <link rel="icon" href="newfavicon-16x16.png" type="image/x-icon">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Image Converter</title>
+  <title>Pro Image Converter • Sky Blue</title>
   <style>
     :root{
-      --sky:#38bdf8;
+      --sky:#38bdf8;          /* sky blue */
       --sky-dark:#0ea5e9;
       --sky-verydark:#0284c7;
-      --bg:#ffffff;
+      --bg:#ffffff;           /* white */
       --muted:#f0f9ff;
       --text:#0b1324;
       --subtext:#334155;
@@ -19,36 +19,14 @@
       --shadow:0 10px 25px rgba(2,132,199,.15);
     }
     * { box-sizing: border-box; }
-    html,body { height: 100%; margin:0; }
+    html,body { height: 100%; }
     body{
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
       background: linear-gradient(180deg, var(--muted), #fff);
       color: var(--text);
       display:flex; align-items:center; justify-content:center;
-      padding: 24px;
+      padding: 24px; 
     }
-
-    /* Layout wrapper for ads + tool */
-    .layout {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      width: 100%;
-      gap: 20px;
-    }
-    .ad-slot {
-      width: 160px;
-      min-height: 600px;
-      background: #f1f5f9;
-      border: 1px dashed #94a3b8;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      color: #475569;
-    }
-
     .app{
       width: min(100%, 980px);
       background: var(--bg);
@@ -78,8 +56,6 @@
     }
     @media (max-width: 820px){
       .grid{ grid-template-columns: 1fr; }
-      .layout { flex-direction: column; align-items: center; }
-      .ad-slot { width:100%; min-height:120px; }
     }
 
     .card{
@@ -100,7 +76,9 @@
     .drop input{ display:none; }
     .drop .help{ color:#0369a1; font-size: 13px; }
 
-    .controls{ display:grid; gap:12px; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .controls{
+      display:grid; gap:12px; grid-template-columns: repeat(2, minmax(0,1fr));
+    }
     .controls .row{ display:flex; gap:8px; align-items:center; }
     label{ font-size: 13px; color: var(--subtext); }
     select, input[type="number"], input[type="range"]{
@@ -119,7 +97,9 @@
     .ghost{ background:#e6f4ff; color:#0b1324; }
     .ghost:hover{ background:#dbeafe; }
 
-    .preview{ display:grid; grid-template-columns: 1fr; gap:10px; align-items:start; }
+    .preview{
+      display:grid; grid-template-columns: 1fr; gap:10px; align-items:start;
+    }
     .preview-img{
       width:100%; aspect-ratio: 16/10; background: #f8fafc; border-radius: 14px; border:1px solid #eef6ff; overflow:hidden;
       display:grid; place-items:center; position:relative;
@@ -127,7 +107,9 @@
     .preview-img img{ max-width: 100%; max-height: 100%; object-fit: contain; }
     .badge{ position:absolute; top:10px; right:10px; background:white; border:1px solid #e2e8f0; padding:6px 10px; font-size:12px; border-radius:999px; color:#0f172a; box-shadow:0 4px 10px rgba(0,0,0,.06) }
 
-    .stats{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; margin-top:6px; }
+    .stats{
+      display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; margin-top:6px;
+    }
     .stat{ background:#f8fdff; border:1px solid #eaf2ff; border-radius:12px; padding:10px; }
     .stat b{ display:block; font-size:12px; color:#0f172a; }
     .stat small{ color:#475569; }
@@ -148,89 +130,272 @@
 	};
 </script>
 <script type="text/javascript" src="//www.highperformanceformat.com/7efdbfa272e932b11cb8fec68415b95e/invoke.js"></script></div>
+  <main class="app" role="application">
+    <header>
+      <div class="title">
+        <div class="logo" aria-hidden="true">IC</div>
+        <div>
+          <h1>Image Converter</h1>
+          <div class="sub">Fast, Free & Easy Image Conversion – Convert Any Format in Seconds!</div>
+        </div>
+      </div>
+      <a class="btn ghost" id="clearBtn" role="button" href="#">Reset</a>
+    </header>
 
-    <!-- Main App -->
-    <main class="app" role="application">
-      <header>
-        <div class="title">
-          <div class="logo" aria-hidden="true">IC</div>
+    <section class="grid" aria-label="Image converter tool">
+      <!-- LEFT: Input & Controls -->
+      <div class="card" aria-live="polite">
+        <h2>1) Upload image</h2>
+        <p class="muted">Drag & drop, or click to browse. JPG, PNG, WebP, GIF and more are supported. Everything happens in your browser.</p>
+        <label class="drop" id="dropzone" tabindex="0" aria-label="Upload image by clicking or dragging">
+          <input type="file" id="fileInput" accept="image/*" />
           <div>
-            <h1>Image Converter</h1>
-            <div class="sub">Fast, Free & Easy Image Conversion – Convert Any Format in Seconds!</div>
+            <h3 style="margin:6px 0 2px">Drop image here or <u>click to upload</u></h3>
+            <div class="help">Max 20 MB • Single file</div>
           </div>
-        </div>
-        <a class="btn ghost" id="clearBtn" role="button" href="#">Reset</a>
-      </header>
+        </label>
 
-      <section class="grid" aria-label="Image converter tool">
-        <!-- LEFT: Input & Controls -->
-        <div class="card" aria-live="polite">
-          <h2>1) Upload image</h2>
-          <p class="muted">Drag & drop, or click to browse. JPG, PNG, WebP, GIF and more are supported. Everything happens in your browser.</p>
-          <label class="drop" id="dropzone" tabindex="0" aria-label="Upload image by clicking or dragging">
-            <input type="file" id="fileInput" accept="image/*" />
-            <div>
-              <h3 style="margin:6px 0 2px">Drop image here or <u>click to upload</u></h3>
-              <div class="help">Max 20 MB • Single file</div>
-            </div>
-          </label>
-
-          <div class="controls" style="margin-top:14px">
-            <div class="row">
-              <label for="format">Output format</label>
-              <select id="format" aria-label="Select output format">
-                <option value="image/jpeg">JPEG (.jpg)</option>
-                <option value="image/png">PNG (.png)</option>
-                <option value="image/webp">WebP (.webp)</option>
-                <option value="image/avif">AVIF (.avif)</option>
-              </select>
-            </div>
-            <div class="row" id="qualityRow">
-              <label for="quality">Quality / Compression</label>
-              <input type="range" id="quality" min="10" max="100" value="80" />
-            </div>
-            <div class="row">
-              <label for="width">Resize (optional)</label>
-              <input id="width" type="number" inputmode="numeric" placeholder="Width px (auto height)" min="1" />
-            </div>
-            <div class="row">
-              <label for="scale">Scale (%)</label>
-              <input id="scale" type="number" inputmode="numeric" placeholder="100" min="1" max="500" />
-            </div>
+        <div class="controls" style="margin-top:14px">
+          <div class="row">
+            <label for="format">Output format</label>
+            <select id="format" aria-label="Select output format">
+              <option value="image/jpeg">JPEG (.jpg)</option>
+              <option value="image/png">PNG (.png)</option>
+              <option value="image/webp">WebP (.webp)</option>
+              <option value="image/avif">AVIF (.avif)</option>
+            </select>
           </div>
-
-          <div class="actions">
-            <button class="primary" id="convertBtn" disabled>
-              Convert & Preview
-            </button>
-            <a class="btn ghost" id="downloadBtn" download="converted" aria-disabled="true">Download</a>
+          <div class="row" id="qualityRow">
+            <label for="quality">Quality / Compression</label>
+            <input type="range" id="quality" min="10" max="100" value="80" />
+          </div>
+          <div class="row">
+            <label for="width">Resize (optional)</label>
+            <input id="width" type="number" inputmode="numeric" placeholder="Width px (auto height)" min="1" />
+          </div>
+          <div class="row">
+            <label for="scale">Scale (%)</label>
+            <input id="scale" type="number" inputmode="numeric" placeholder="100" min="1" max="500" />
           </div>
         </div>
 
-        <!-- RIGHT: Preview & Stats -->
-        <div class="card preview">
-          <h2>2) Preview</h2>
-          <div class="preview-img" id="previewBox">
-            <span class="badge" id="badge">No file</span>
-            <img id="preview" alt="Preview will appear here" />
+        <div class="actions">
+          <button class="primary" id="convertBtn" disabled>
+            Convert & Preview
+          </button>
+          <a class="btn ghost" id="downloadBtn" download="converted" aria-disabled="true">Download</a>
+        </div>
+      </div>
+
+      <!-- RIGHT: Preview & Stats -->
+      <div class="card preview">
+        <h2>2) Preview</h2>
+        <div class="preview-img" id="previewBox">
+          <span class="badge" id="badge">No file</span>
+          <img id="preview" alt="Preview will appear here" />
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <b>Original</b>
+            <small id="origMeta">—</small>
           </div>
-          <div class="stats">
-            <div class="stat">
-              <b>Original</b>
-              <small id="origMeta">—</small>
-            </div>
-            <div class="stat">
-              <b>Converted</b>
-              <small id="outMeta">—</small>
-            </div>
+          <div class="stat">
+            <b>Converted</b>
+            <small id="outMeta">—</small>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <div class="footer-note">Tip: Use JPEG/WebP/AVIF for smaller files. PNG is lossless and bigger. AVIF support varies by browser.</div>
-    </main>
+    <div class="footer-note">Tip: Use JPEG/WebP/AVIF for smaller files. PNG is lossless and bigger. AVIF support varies by browser.</div>
+  </main>
 
-    <!-- Right Ad -->
+  <script>
+    // Utility: bytes → readable
+    const fmtBytes = (bytes) => {
+      if (!bytes && bytes !== 0) return '—';
+      const u = ['B','KB','MB','GB'];
+      let i=0, n=bytes;
+      while(n>=1024 && i<u.length-1){ n/=1024; i++; }
+      return n.toFixed(n<10?2:0)+' '+u[i];
+    };
+
+    // Elements
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const previewImg = document.getElementById('preview');
+    const previewBox = document.getElementById('previewBox');
+    const badge = document.getElementById('badge');
+    const origMeta = document.getElementById('origMeta');
+    const outMeta = document.getElementById('outMeta');
+    const formatSel = document.getElementById('format');
+    const qualityInput = document.getElementById('quality');
+    const qualityRow = document.getElementById('qualityRow');
+    const convertBtn = document.getElementById('convertBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const widthInput = document.getElementById('width');
+    const scaleInput = document.getElementById('scale');
+    const clearBtn = document.getElementById('clearBtn');
+
+    let state = {
+      file:null,
+      imageBitmap:null,
+      orig:{ w:0, h:0, size:0, type:''},
+      out:{ blob:null, url:null, w:0, h:0, type:'', size:0 }
+    };
+
+    // Feature-detect output formats
+    (function detectFormats(){
+      const test = (type)=>{
+        const c=document.createElement('canvas');
+        return c.toDataURL(type).startsWith(`data:${type}`);
+      };
+      const opts=[...formatSel.options];
+      opts.forEach(o=>{ if (!test(o.value)) o.disabled = true; });
+    })();
+
+    // Drag & drop
+    ['dragenter','dragover'].forEach(ev=>{
+      dropzone.addEventListener(ev,e=>{ e.preventDefault(); dropzone.classList.add('dragover'); })
+    });
+    ;['dragleave','drop'].forEach(ev=>{
+      dropzone.addEventListener(ev,e=>{ e.preventDefault(); dropzone.classList.remove('dragover'); })
+    });
+    dropzone.addEventListener('drop', (e)=>{
+      const f = e.dataTransfer.files?.[0]; if (f) handleFile(f);
+    });
+    dropzone.addEventListener('click', ()=> fileInput.click());
+    dropzone.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fileInput.click(); }});
+    fileInput.addEventListener('change', ()=>{
+      const f = fileInput.files?.[0]; if (f) handleFile(f);
+    });
+
+    // Core: handle file
+    async function handleFile(file){
+      if (!file.type.startsWith('image/')) return alert('Please choose an image file.');
+      if (file.size > 20*1024*1024) return alert('Please select an image under 20 MB.');
+      resetOutput();
+      state.file = file;
+      state.orig.size = file.size;
+      state.orig.type = file.type || 'image/*';
+      badge.textContent = file.type.replace('image/','').toUpperCase();
+
+      // Decode
+      const blobUrl = URL.createObjectURL(file);
+      try{
+        const imgBitmap = await createImageBitmap(file);
+        state.imageBitmap = imgBitmap;
+        state.orig.w = imgBitmap.width; state.orig.h = imgBitmap.height;
+        previewImg.src = blobUrl; // Original as preview initially
+        previewImg.onload = ()=> URL.revokeObjectURL(blobUrl);
+        origMeta.textContent = `${state.orig.w}×${state.orig.h}px • ${fmtBytes(state.orig.size)} • ${state.orig.type}`;
+        convertBtn.disabled = false;
+      }catch(err){
+        console.error(err);
+        URL.revokeObjectURL(blobUrl);
+        alert('Could not read this image. Try a different file.');
+      }
+    }
+
+    function lossySelected(){
+      const t = formatSel.value;
+      return t === 'image/jpeg' || t === 'image/webp' || t === 'image/avif';
+    }
+
+    formatSel.addEventListener('change', ()=>{
+      qualityRow.style.display = lossySelected() ? 'block' : 'none';
+      // update filename suffix on the download button if available
+      if(state.file){
+        const ext = formatSel.value.split('/')[1].replace('jpeg','jpg');
+        downloadBtn.download = (state.file.name.replace(/\.[^.]+$/, '')) + '.' + ext;
+      }
+    });
+    qualityRow.style.display = lossySelected() ? 'block' : 'none';
+
+    // Convert
+    convertBtn.addEventListener('click', async ()=>{
+      if(!state.imageBitmap) return;
+      convertBtn.disabled = true;
+      convertBtn.textContent = 'Converting…';
+      try{
+        const targetType = formatSel.value;
+        const quality = (parseInt(qualityInput.value,10)||80) / 100;
+
+        // Determine target dimensions
+        let tw = state.imageBitmap.width;
+        let th = state.imageBitmap.height;
+        const scale = parseInt(scaleInput.value,10);
+        if (scale && scale>0) { tw = Math.max(1, Math.round(tw*scale/100)); th = Math.max(1, Math.round(th*scale/100)); }
+        const wInput = parseInt(widthInput.value,10);
+        if (wInput && wInput>0) { th = Math.round(th * (wInput / tw)); tw = wInput; }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = tw; canvas.height = th;
+        const ctx = canvas.getContext('2d', { alpha: true });
+        ctx.drawImage(state.imageBitmap, 0, 0, tw, th);
+
+        const blob = await new Promise((resolve,reject)=>{
+          if (lossySelected()) {
+            canvas.toBlob(b=> b?resolve(b):reject(new Error('toBlob failed')) , targetType, quality);
+          } else {
+            canvas.toBlob(b=> b?resolve(b):reject(new Error('toBlob failed')) , targetType);
+          }
+        });
+
+        if (state.out.url) URL.revokeObjectURL(state.out.url);
+        state.out.blob = blob;
+        state.out.type = blob.type || targetType;
+        state.out.size = blob.size;
+        state.out.w = tw; state.out.h = th;
+        state.out.url = URL.createObjectURL(blob);
+
+        // Show preview of converted image
+        previewImg.src = state.out.url;
+        badge.textContent = state.out.type.replace('image/','').toUpperCase();
+        outMeta.textContent = `${tw}×${th}px • ${fmtBytes(state.out.size)} • ${state.out.type}`;
+
+        // Prepare download
+        downloadBtn.href = state.out.url;
+        downloadBtn.setAttribute('aria-disabled','false');
+        downloadBtn.classList.remove('disabled');
+        const ext = state.out.type.split('/')[1].replace('jpeg','jpg');
+        downloadBtn.download = (state.file?.name?.replace(/\.[^.]+$/, '')) + '.' + ext;
+      }
+      catch(err){
+        console.error(err);
+        alert('Conversion failed. Try a different format or image.');
+      }
+      finally{
+        convertBtn.disabled = false;
+        convertBtn.textContent = 'Convert & Preview';
+      }
+    });
+
+    // Reset
+    function resetOutput(){
+      if (state.out.url) URL.revokeObjectURL(state.out.url);
+      state.out = { blob:null, url:null, w:0, h:0, type:'', size:0 };
+      previewImg.removeAttribute('src');
+      badge.textContent = 'No file';
+      origMeta.textContent = '—';
+      outMeta.textContent = '—';
+      downloadBtn.removeAttribute('href');
+      downloadBtn.setAttribute('aria-disabled','true');
+      convertBtn.disabled = true;
+    }
+
+    clearBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      fileInput.value = '';
+      state.file = null; state.imageBitmap = null; state.orig = { w:0,h:0,size:0,type:'' };
+      resetOutput();
+      previewBox.focus();
+    });
+
+    // Keyboard accessibility for range (announce value)
+    qualityInput.addEventListener('input', ()=> qualityInput.title = `Quality: ${qualityInput.value}%`);
+  </script>
+ <!-- Right Ad -->
     <div class="ad-slot"><script type="text/javascript">
 	atOptions = {
 		'key' : '7efdbfa272e932b11cb8fec68415b95e',
@@ -241,6 +406,5 @@
 	};
 </script>
 <script type="text/javascript" src="//www.highperformanceformat.com/7efdbfa272e932b11cb8fec68415b95e/invoke.js"></script></div>
-  </div>
 </body>
 </html>
