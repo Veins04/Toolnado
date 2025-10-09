@@ -134,30 +134,31 @@
     @media(max-width:1080px){
       .banner{ display:none; }
     }
+/* 🔧 Fix: Preview placeholder and drag highlight */
+.preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  opacity: 0.8;
+}
+
+.preview-img.dragover {
+  background: #dbeafe;
+  border-color: var(--sky-dark);
+  box-shadow: var(--ring);
+}
+
+.preview-img img {
+  display: none;
+}
   </style>
 </head>
 <body>
 <!-- ✅ 160x600 Banner Ads -->
-  <div class="banner left"><script type="text/javascript">
-	atOptions = {
-		'key' : '7efdbfa272e932b11cb8fec68415b95e',
-		'format' : 'iframe',
-		'height' : 600,
-		'width' : 160,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/7efdbfa272e932b11cb8fec68415b95e/invoke.js"></script></div>
-  <div class="banner right"><script type="text/javascript">
-	atOptions = {
-		'key' : '7efdbfa272e932b11cb8fec68415b95e',
-		'format' : 'iframe',
-		'height' : 600,
-		'width' : 160,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/7efdbfa272e932b11cb8fec68415b95e/invoke.js"></script></div>
+  <div class="banner left">160×600 Ad</div>
+  <div class="banner right">160×600 Ad</div>
   <main class="app" role="application">
     <header>
       <div class="title">
@@ -220,10 +221,18 @@
       <!-- RIGHT: Preview & Stats -->
       <div class="card preview">
         <h2>2) Preview</h2>
-        <div class="preview-img" id="previewBox">
-          <span class="badge" id="badge">No file</span>
-          <img id="preview" alt="Preview will appear here" />
-        </div>
+<div class="preview-img" id="previewBox">
+  <span class="badge" id="badge">No file</span>
+  <img id="preview" alt="Preview image" />
+  <div id="previewPlaceholder" class="preview-placeholder">
+    <!-- Preview placeholder icon -->
+    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="#94a3b8" viewBox="0 0 24 24">
+      <path d="M21 19V7h-4.586l-2-2H9.586l-2 2H3v12h18zm0 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3.586l2-2h6.828l2 2H21a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2z"/>
+      <circle cx="12" cy="13" r="3"/>
+    </svg>
+    <p style="color:#94a3b8;font-size:13px;margin-top:6px;">Preview</p>
+  </div>
+</div>
         <div class="stats">
           <div class="stat">
             <b>Original</b>
@@ -241,6 +250,9 @@
   </main>
 
   <script>
+function showPreviewPlaceholder(show) {
+  document.getElementById("previewPlaceholder").style.display = show ? "flex" : "none";
+}
     // Utility: bytes → readable
     const fmtBytes = (bytes) => {
       if (!bytes && bytes !== 0) return '—';
@@ -317,6 +329,7 @@
         state.imageBitmap = imgBitmap;
         state.orig.w = imgBitmap.width; state.orig.h = imgBitmap.height;
         previewImg.src = blobUrl; // Original as preview initially
+        showPreviewPlaceholder(false);
         previewImg.onload = ()=> URL.revokeObjectURL(blobUrl);
         origMeta.textContent = `${state.orig.w}×${state.orig.h}px • ${fmtBytes(state.orig.size)} • ${state.orig.type}`;
         convertBtn.disabled = false;
@@ -420,6 +433,7 @@
       state.file = null; state.imageBitmap = null; state.orig = { w:0,h:0,size:0,type:'' };
       resetOutput();
       previewBox.focus();
+      showPreviewPlaceholder(true);
     });
 
     // Keyboard accessibility for range (announce value)
