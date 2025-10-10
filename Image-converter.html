@@ -247,8 +247,7 @@
         <h2>2) Preview</h2>
         <div class="preview-img" id="previewBox">
           <span class="badge" id="badge">No file</span>
-			<img width="96" height="96" src="https://img.icons8.com/pulsar-color/96/preview-file.png" alt="preview-file"/>
-          <img id="preview" alt="Preview will appear here" />
+		  <img id="preview" alt="Preview will appear here" />
         </div>
         <div class="stats">
           <div class="stat">
@@ -450,10 +449,6 @@
 
     // Keyboard accessibility for range (announce value)
     qualityInput.addEventListener('input', ()=> qualityInput.title = `Quality: ${qualityInput.value}%`);
-	  // ⚙️ Hide placeholder icon when preview loads
-previewImg.addEventListener('load', () => {
-  document.getElementById('previewIcon').style.display = 'none';
-});
  </script>
 </body>
 </html>
