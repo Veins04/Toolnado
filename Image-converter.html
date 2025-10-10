@@ -65,16 +65,41 @@
     .card h2{ margin:0 0 8px; font-size: 18px; }
     .muted{ color: var(--subtext); font-size: 13px; }
 
-    .drop{
-      border:2px dashed var(--sky);
-      background: #f0f9ff;
-      border-radius: 16px; padding: 20px; text-align:center;
-      cursor: pointer; transition: .2s ease;
-    }
-    .drop:hover{ background:#e0f2fe; }
-    .drop.dragover{ background:#dbeafe; box-shadow: var(--ring); }
-    .drop input{ display:none; }
-    .drop .help{ color:#0369a1; font-size: 13px; }
+.drop {
+  border: 2px dashed var(--sky);
+  background: #f0f9ff;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: .25s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;           /* ensures smooth full box shape */
+  box-sizing: border-box;
+}
+
+.drop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+.drop.dragover {
+  background: #e0f2fe;
+  border-color: var(--sky-dark);
+  box-shadow: var(--ring);
+}
+
+/* ⚙️ Preview placeholder icon style */
+#previewIcon {
+  width: 64px;
+  opacity: 0.6;
+}
 
     .controls{
       display:grid; gap:12px; grid-template-columns: repeat(2, minmax(0,1fr));
@@ -222,6 +247,7 @@
         <h2>2) Preview</h2>
         <div class="preview-img" id="previewBox">
           <span class="badge" id="badge">No file</span>
+			<img width="96" height="96" src="https://img.icons8.com/pulsar-color/96/preview-file.png" alt="preview-file"/>
           <img id="preview" alt="Preview will appear here" />
         </div>
         <div class="stats">
@@ -424,6 +450,10 @@
 
     // Keyboard accessibility for range (announce value)
     qualityInput.addEventListener('input', ()=> qualityInput.title = `Quality: ${qualityInput.value}%`);
-  </script>
+	  // ⚙️ Hide placeholder icon when preview loads
+previewImg.addEventListener('load', () => {
+  document.getElementById('previewIcon').style.display = 'none';
+});
+ </script>
 </body>
 </html>
