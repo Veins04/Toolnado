@@ -348,8 +348,8 @@ main.app header {
             <div class="help">Max 20 MB • Single file</div>
           </div>
         </label>
-          <p id="fileName" style="text-align:center; font-size:13px; color:#475569; margin-top:8px;">No file chosen</p>
-          <div class="controls" style="margin-top:14px">
+
+        <div class="controls" style="margin-top:14px">
           <div class="row">
             <label for="format">Output format</label>
             <select id="format" aria-label="Select output format">
@@ -480,11 +480,7 @@ main.app header {
         const imgBitmap = await createImageBitmap(file);
         state.imageBitmap = imgBitmap;
         state.orig.w = imgBitmap.width; state.orig.h = imgBitmap.height;
-        previewImg.src = blobUrl;
-        previewImg.style.display = 'block';
-        previewImg.alt = file.name;
-        badge.textContent = file.name.split('\\').pop(); // show filename on badge 
-        document.getElementById('fileName').textContent = file.name;
+        previewImg.src = blobUrl; // Original as preview initially
         previewImg.onload = ()=> URL.revokeObjectURL(blobUrl);
         origMeta.textContent = `${state.orig.w}×${state.orig.h}px • ${fmtBytes(state.orig.size)} • ${state.orig.type}`;
         convertBtn.disabled = false;
