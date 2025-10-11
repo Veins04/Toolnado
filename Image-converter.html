@@ -458,7 +458,10 @@ main.app header {
     dropzone.addEventListener('drop', (e)=>{
       const f = e.dataTransfer.files?.[0]; if (f) handleFile(f);
     });
-    dropzone.addEventListener('click', ()=> fileInput.click());
+  dropzone.addEventListener('click', ()=>{
+  fileInput.value = '';  // reset file input to allow first-click uploads
+  fileInput.click();     // open file picker
+});
     dropzone.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fileInput.click(); }});
     fileInput.addEventListener('change', ()=>{
       const f = fileInput.files?.[0]; if (f) handleFile(f);
@@ -466,6 +469,7 @@ main.app header {
 
     // Core: handle file
     async function handleFile(file){
+      fileInput.value = ''; // reset input so next upload works cleanly
       if (!file.type.startsWith('image/')) return alert('Please choose an image file.');
       if (file.size > 20*1024*1024) return alert('Please select an image under 20 MB.');
       resetOutput();
