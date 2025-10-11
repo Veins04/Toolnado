@@ -242,52 +242,38 @@
     @media(max-width:900px){
       .banner{ display:none; }
     }
-.hero, .why-toolnado {
-  padding: 20px 24px;
-  background: #ffffff;
-  border-bottom: 1px solid #eaf6ff;
+/* 🧭 Fix layout for hero section and spacing */
+.hero {
+  display: block;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 40px 20px 20px;
+  text-align: center;
+  background: linear-gradient(180deg, #f0f9ff, #ffffff);
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.08);
 }
 
 .hero h1 {
-  font-size: 22px;
-  margin-bottom: 10px;
-  color: var(--sky-verydark);
+  margin-top: 0;
+  color: var(--sky-dark);
+  font-size: clamp(22px, 2.8vw, 28px);
 }
 
 .hero p {
   color: var(--subtext);
   font-size: 15px;
+  max-width: 700px;
+  margin: 10px auto 0;
   line-height: 1.6;
 }
 
-.why-toolnado h2 {
-  font-size: 18px;
-  margin-bottom: 8px;
-  color: var(--sky-dark);
+/* Add a little top space before the header so it doesn’t overlap */
+main.app header {
+  margin-top: 20px;
 }
-
-.why-toolnado ul {
-  list-style: none;
-  padding-left: 0;
-  margin: 0;
-}
-
-.why-toolnado li {
-  margin-bottom: 6px;
-  padding-left: 20px;
-  position: relative;
-  font-size: 14px;
-  color: var(--text);
-}
-
-.why-toolnado li::before {
-  content: "✔";
-  position: absolute;
-  left: 0;
-  color: var(--sky-dark);
-}
-
-  </style>
+</style>
 </head>
 <body>
 <!-- ✅ 160x600 Banner Ads -->
