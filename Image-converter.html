@@ -242,6 +242,51 @@
     @media(max-width:900px){
       .banner{ display:none; }
     }
+.hero, .why-toolnado {
+  padding: 20px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #eaf6ff;
+}
+
+.hero h1 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: var(--sky-verydark);
+}
+
+.hero p {
+  color: var(--subtext);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.why-toolnado h2 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: var(--sky-dark);
+}
+
+.why-toolnado ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.why-toolnado li {
+  margin-bottom: 6px;
+  padding-left: 20px;
+  position: relative;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.why-toolnado li::before {
+  content: "✔";
+  position: absolute;
+  left: 0;
+  color: var(--sky-dark);
+}
+
   </style>
 </head>
 <body>
@@ -287,8 +332,6 @@
   <a class="btn ghost" href="/" role="button">🏠 Home</a>
   <a class="btn ghost" id="clearBtn" role="button" href="#">Reset</a>
 </div>    </header>
-<!-- ✅ SEO content start -->
-<section class="hero">
   <h1>Online Image Converter – Free & Fast Tool</h1>
   <p>
     Welcome to <strong>Toolnado’s Online Image Converter</strong> — the ultimate
@@ -307,8 +350,6 @@
     <li>✔ Built-in OCR to convert photo to text</li>
     <li>✔ Secure – your files are automatically deleted after conversion</li>
   </ul>
-</section>
-<!-- ✅ SEO content end -->
       <section class="grid" aria-label="Image converter tool">
       <!-- LEFT: Input & Controls -->
       <div class="card" aria-live="polite">
