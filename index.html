@@ -276,7 +276,7 @@
 }
 
 .dropdown-content {
-    display: none;
+    display: none; /* Stays hidden by default */
     position: absolute;
     background-color: var(--card-bg);
     min-width: 800px;
@@ -286,15 +286,14 @@
     top: 100%;
     left: 0;
     z-index: 999;
-    display: grid;
+    /* Removed the redundant 'display: grid;' */
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
 }
 
 .dropdown.active .dropdown-content {
-    display: grid;
+    display: grid; /* Only shows when the 'active' class is present */
 }
-        
 .dropdown-column h4 {
     color: var(--primary);
     font-size: 1rem;
