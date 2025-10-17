@@ -266,8 +266,54 @@
         .use-tool:hover {
             background-color: var(--primary-dark);
         }
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+}
 
-        /* Footer */
+.dropbtn {
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--card-bg);
+    min-width: 800px;
+    box-shadow: 0 8px 20px var(--shadow);
+    border-radius: 10px;
+    padding: 20px;
+    top: 100%;
+    left: 0;
+    z-index: 999;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.dropdown:hover .dropdown-content {
+    display: grid;
+}
+
+.dropdown-column h4 {
+    color: var(--primary);
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.dropdown-column a {
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    padding: 5px 0;
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+.dropdown-column a:hover {
+    color: var(--primary);
+}
+    /* Footer */
         footer {
             background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
             padding: 50px 0 20px;
@@ -397,13 +443,47 @@
         <div class="container header-container">
             <a href="#" class="logo">Toolnado</a>
             <nav>
-                <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#tools">Tools</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </nav>
-            <div class="header-right">
+    <ul>
+        <li><a href="#">Home</a></li>
+
+        <li class="dropdown">
+            <a href="#tools" class="dropbtn">Tools ▾</a>
+            <div class="dropdown-content">
+                <div class="dropdown-column">
+                    <h4>Image Tools</h4>
+                    <a href="Image-converter.html">Image Converter</a>
+                    <a href="ImageCompressor.html">Image Compressor</a>
+                    <a href="Image-Resizer.html">Image Resizer</a>
+                    <a href="Image-Crop.html">Image Cropper</a>
+                </div>
+                <div class="dropdown-column">
+                    <h4>Calculator Tools</h4>
+                    <a href="Scientific-Calculator.html">Scientific Calculator</a>
+                    <a href="Age-Calculator.html">Age Calculator</a>
+                    <a href="BMI-Calculator.html">BMI Calculator</a>
+                    <a href="Loan-Calculator.html">Loan EMI Calculator</a>
+                </div>
+                <div class="dropdown-column">
+                    <h4>Text Tools</h4>
+                    <a href="TextCase-Converter.html">Text Case Converter</a>
+                    <a href="WordCounter.html">Word Counter</a>
+                    <a href="DuplicateRemover.html">Duplicate Remover</a>
+                    <a href="Textreverse-Tool.html">Text Reverser</a>
+                </div>
+                <div class="dropdown-column">
+                    <h4>Utility Tools</h4>
+                    <a href="QRcodeGenerator-Tool.html">QR Code Generator</a>
+                    <a href="BarcodeGenerator-Tool.html">Barcode Generator</a>
+                    <a href="Unitconverter-Tool.html">Unit Converter</a>
+                    <a href="Randomgenerator-Tool.html">Password Generator</a>
+                </div>
+            </div>
+        </li>
+
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+</nav>
+       <div class="header-right">
                 <span class="contact-email">toolnado.contactus@gmail.com</span>
                 <button class="theme-toggle" id="theme-toggle">
                     <i class="fas fa-moon"></i>
