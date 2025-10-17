@@ -291,10 +291,10 @@
     gap: 20px;
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown.active .dropdown-content {
     display: grid;
 }
-
+        
 .dropdown-column h4 {
     color: var(--primary);
     font-size: 1rem;
@@ -909,7 +909,22 @@
                 }
             });
         });
-    </script>
+        // Dropdown toggle for Tools menu
+const dropdown = document.querySelector('.dropdown');
+const dropbtn = dropdown.querySelector('.dropbtn');
+
+dropbtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    dropdown.classList.toggle('active');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target)) {
+        dropdown.classList.remove('active');
+    }
+});
+</script>
 <script async="async" data-cfasync="false" src="//pl27572554.revenuecpmgate.com/4700ee54b570880d020951b90ab152db/invoke.js"></script>
 <div id="container-4700ee54b570880d020951b90ab152db"></div>
 </body>
