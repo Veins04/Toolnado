@@ -434,7 +434,43 @@
                 grid-template-columns: 1fr;
             }
         }
-    </style>
+        /* Footer dropdown styling */
+.footer-dropdown {
+  position: relative;
+}
+
+.footer-submenu {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background-color: var(--primary);
+  padding: 10px;
+  border-radius: 8px;
+  list-style: none;
+  box-shadow: 0 4px 10px var(--shadow);
+}
+
+.footer-submenu li {
+  margin: 5px 0;
+}
+
+.footer-submenu li a {
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.footer-submenu li a:hover {
+  text-decoration: underline;
+}
+
+/* Show submenu on hover */
+.footer-dropdown:hover .footer-submenu {
+  display: block;
+}
+
+</style>
 </head>
 <body>
     <!-- Header Section -->
