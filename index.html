@@ -377,41 +377,29 @@
             padding-top: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
+/* ✅ Fix dropdown layout for mobile */
+@media (max-width: 768px) {
+    .dropdown-content {
+        position: static; /* no absolute positioning */
+        min-width: 100%;
+        grid-template-columns: 1fr; /* make it vertical */
+        gap: 10px;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 10px;
+        background-color: var(--background);
+    }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .header-container {
-                flex-direction: column;
-                text-align: center;
-            }
+    .dropdown.active .dropdown-content {
+        display: block; /* ensure visible in vertical mode */
+    }
 
-            nav ul {
-                margin-top: 15px;
-                justify-content: center;
-            }
+    .dropdown-column h4 {
+        margin-top: 10px;
+    }
+}
 
-            nav ul li {
-                margin: 0 10px;
-            }
-
-            .hero h1 {
-                font-size: 2.2rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-
-            .tool-icons {
-                flex-wrap: wrap;
-            }
-
-            .footer-content {
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 480px) {
+       @media (max-width: 480px) {
             .hero {
                 padding: 50px 0;
             }
@@ -920,41 +908,59 @@
             }
         });
 
-        // Search Functionality
-        const toolSearch = document.getElementById('tool-search');
-        const toolCards = document.querySelectorAll('.tool-card');
-        const sectionTitles = document.querySelectorAll('.section-title');
-        
-        toolSearch.addEventListener('input', () => {
-            const searchTerm = toolSearch.value.toLowerCase();
-            let hasVisibleCards = false;
-            
-            toolCards.forEach(card => {
-                const toolName = card.querySelector('h3').textContent.toLowerCase();
-                const toolDesc = card.querySelector('p').textContent.toLowerCase();
-                
-                if (toolName.includes(searchTerm) || toolDesc.includes(searchTerm)) {
-                    card.style.display = 'flex';
-                    hasVisibleCards = true;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            // Hide sections with no visible tools
-            sectionTitles.forEach(title => {
-                const section = title.nextElementSibling;
-                const visibleTools = section.querySelectorAll('.tool-card[style="display: flex"]');
-                
-                if (visibleTools.length === 0 && searchTerm !== '') {
-                    title.style.display = 'none';
-                    section.style.display = 'none';
-                } else {
-                    title.style.display = 'block';
-                    section.style.display = 'grid';
-                }
-            });
-        });
+// Search Functionality
+const toolSearch = document.getElementById('tool-search');
+const allSections = document.querySelectorAll('.section-title');
+
+// Create a "No results" message below the search bar
+const noResults = document.createElement('p');
+noResults.id = 'no-results';
+noResults.textContent = 'No tools found.';
+noResults.style.cssText = 'text-align:center; display:none; color:var(--text-light); margin-top:10px;';
+document.querySelector('.search-container').appendChild(noResults);
+
+toolSearch.addEventListener('input', () => {
+  const searchTerm = toolSearch.value.toLowerCase().trim();
+  let foundAny = false;
+
+  allSections.forEach(section => {
+    // Find the tool grid right after the title
+    let grid = section.nextElementSibling;
+    while (grid && !grid.classList.contains('tools-grid')) {
+      grid = grid.nextElementSibling;
+    }
+    if (!grid) return;
+
+    const cards = grid.querySelectorAll('.tool-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const name = card.querySelector('h3').textContent.toLowerCase();
+      const desc = card.querySelector('p').textContent.toLowerCase();
+
+      if (searchTerm === '' || name.includes(searchTerm) || desc.includes(searchTerm)) {
+        card.style.display = 'flex';
+        visibleCount++;
+        foundAny = true;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    // Hide or show each section
+    if (visibleCount === 0 && searchTerm !== '') {
+      section.style.display = 'none';
+      grid.style.display = 'none';
+    } else {
+      section.style.display = 'block';
+      grid.style.display = 'grid';
+    }
+  });
+
+  // Show or hide "No results"
+  noResults.style.display = foundAny ? 'none' : 'block';
+});
+
 // Dropdown toggle for Tools menu (fixed version)
 document.addEventListener('DOMContentLoaded', () => {
     const dropdown = document.querySelector('.dropdown');
